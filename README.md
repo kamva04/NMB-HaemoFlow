@@ -29,8 +29,6 @@ NMB-HLabSys is an ASP.NET Core MVC web application for managing workflows at the
 
 The application reads configuration from `appsettings.json`, environment-specific settings, environment variables, and .NET user secrets. Set the database connection string and email settings for your environment. Do not commit credentials or production secrets.
 
-For local development, open a terminal in the directory containing `NMB-HLabSys.csproj`, then initialize user secrets and set the values you need:
-
 ```powershell
 dotnet user-secrets init
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=NMB_HLabSys;Trusted_Connection=True;TrustServerCertificate=True;"
@@ -42,8 +40,7 @@ dotnet user-secrets set "Email:DisplayName" "NMB-HLabSys"
 dotnet user-secrets set "Email:EnableSSL" "true"
 dotnet user-secrets set "PasswordReset:PublicOrigin" "https://localhost:5001"
 ```
-
-Adjust the SQL Server connection string for your authentication method and server. Configure SMTP values if you want the application to send email. User secrets are for local development; use your deployment platform's secret store for deployed environments.
+ 
 
 ## Run locally
 
@@ -58,9 +55,7 @@ On startup, the application applies pending Entity Framework Core migrations and
 
 The exact local URL is printed by `dotnet run`. Open it in a browser and use HTTPS when prompted.
 
-## Demo accounts
-
-The seeder creates five demo accounts for each role and uses the same development password for the seeded users. The seed data is defined in `Data/DatabaseSeeder.cs`. These accounts and passwords are for development only; change or disable them before deploying to a shared or production environment.
+ 
 
 ## Project layout
 
@@ -76,13 +71,5 @@ Views/          Razor pages organized by controller
 wwwroot/        Static assets, stylesheets, scripts, and libraries
 ```
 
-## Database migrations
+ 
 
-Migrations are applied automatically during application startup through `Database.Migrate()`. Add and review a migration when the data model changes, then verify it against a development database before deploying.
-
-## Security notes
-
-- Keep database and SMTP credentials out of source control; use .NET user secrets locally and an approved secrets manager for deployments.
-- Rotate credentials if they have ever been committed or shared.
-- Seeded demo accounts must not be used in production.
-- Use HTTPS for deployed environments.
