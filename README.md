@@ -1,75 +1,75 @@
-# NMB-HLabSys
+# NMB-HLabSys – Haematology Laboratory Management System
 
-NMB-HLabSys is an ASP.NET Core MVC web application for managing workflows at the Nelson Mandela Bay Haematology Laboratory. It provides role-based tools for patients, doctors, laboratory technicians, managers, and administrators.
+NMB-HLabSys is an ASP.NET Core MVC web application developed to digitise the management of haematology laboratory test requests, patient samples and test results at Nelson Mandela Bay Haematology Laboratory.
 
-## Features
+## How the System Works
 
-- **Patients:** manage profile and medical history, submit and track test requests, view released results and reports, and manage doctor consent and appointments.
-- **Doctors:** manage patient records and test requests, review patient history, propose appointments, and release results.
-- **Technicians:** receive samples, manage laboratory work, capture and verify results, and handle consumable requests.
-- **Managers:** manage test categories and types, staff assignments, suppliers, stock, supply requests, and reports.
-- **Administrators:** manage medical-history categories and catalog entries, and sample types.
-- **Shared workflows:** notifications, account and password management, PDF reports, and barcode support.
+The system follows a laboratory testing workflow:
 
-## Technology
+1. **Login:** Users log in using their registered email and password. The system identifies their role and gives them access to the relevant dashboard.
+2. **Doctor:** Doctors register or select patients, create laboratory test requests and select the required tests.
+3. **Sample Collection:** Patients provide the required samples, which are identified using sample barcodes.
+4. **Technician:** Technicians receive and verify samples, process assigned tests and capture laboratory results.
+5. **Result Verification:** A different technician verifies captured results to support accuracy and quality control.
+6. **Doctor Approval:** Doctors review and release verified results to patients.
+7. **Patient:** Patients log in to view their test requests, track progress and access released results.
 
-- .NET 8 / ASP.NET Core MVC with Razor views
-- Entity Framework Core 8 with SQL Server
-- Bootstrap, jQuery, and Bootstrap Icons
-- BCrypt password hashing
-- iText 7 PDF generation and NetBarcode
+## User Roles
 
-## Prerequisites
+- **Admin:** Manages medical conditions, allergies, medications and sample types.
+- **Manager:** Manages doctors, technicians, test types, laboratory consumables, suppliers and stock orders.
+- **Doctor:** Manages patients, creates test requests, monitors progress and releases results.
+- **Technician:** Receives samples, performs tests, captures results and verifies results.
+- **Patient:** Views test requests, medical history, appointments and released results.
 
-- .NET 8 SDK
-- SQL Server instance accessible to the application
-- SMTP credentials if email features are required
+## Technologies Used
 
-## Configuration
+- C#
+- ASP.NET Core 8 MVC
+- Entity Framework Core
+- Microsoft SQL Server
+- HTML, CSS and JavaScript
+- Bootstrap
 
-The application reads configuration from `appsettings.json`, environment-specific settings, environment variables, and .NET user secrets. Set the database connection string and email settings for your environment. Do not commit credentials or production secrets.
+## Getting Started
 
-```powershell
-dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Database=NMB_HLabSys;Trusted_Connection=True;TrustServerCertificate=True;"
-dotnet user-secrets set "Email:SmtpServer" "smtp.example.com"
-dotnet user-secrets set "Email:SmtpPort" "587"
-dotnet user-secrets set "Email:From" "your-address@example.com"
-dotnet user-secrets set "Email:Password" "your-smtp-password"
-dotnet user-secrets set "Email:DisplayName" "NMB-HLabSys"
-dotnet user-secrets set "Email:EnableSSL" "true"
-dotnet user-secrets set "PasswordReset:PublicOrigin" "https://localhost:5001"
-```
- 
+1. Clone the repository:
 
-## Run locally
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/NMB-HLabSys.git
+   ```
 
-From the project directory:
+2. Open `NMB-HLabSys.sln` in Visual Studio.
+3. Configure the SQL Server connection string in `appsettings.json`.
+4. Restore NuGet packages:
 
-```powershell
-dotnet restore
-dotnet run
-```
+   ```bash
+   dotnet restore
+   ```
 
-On startup, the application applies pending Entity Framework Core migrations and seeds demo users for each role. Ensure the configured SQL Server is running and the application can create or update its database before launching.
+5. Apply database migrations using Package Manager Console:
 
-The exact local URL is printed by `dotnet run`. Open it in a browser and use HTTPS when prompted.
+   ```powershell
+   Update-Database
+   ```
 
- 
+6. Run the application:
 
-## Project layout
+   ```bash
+   dotnet run
+   ```
 
-```text
-Controllers/   MVC controllers and application workflows
-Data/          Entity Framework Core context and database seeding
-Filters/       MVC filters, including first-login password enforcement
-Helpers/       Shared validation and display helpers
-Migrations/    Entity Framework Core database migrations
-Models/        Domain entities and view models
-Service/       Authentication, email, PDF, notification, and barcode services
-Views/          Razor pages organized by controller
-wwwroot/        Static assets, stylesheets, scripts, and libraries
-```
+The database is also automatically migrated and seeded when the application starts.
 
- 
+## Security Features
 
+- Role-Based Access Control (RBAC).
+- BCrypt password hashing.
+- Password change and reset functionality.
+- Patient consent management.
+- Session management.
+- Protected access to role-specific pages.
+
+## Author
+
+**Kamva Ndebelefele**
