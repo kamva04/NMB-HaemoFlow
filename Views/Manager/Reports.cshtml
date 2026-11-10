@@ -1,0 +1,336 @@
+@model NMB_HLabSys.Models.ViewModels.ReportFilterViewModel
+@{
+    ViewData["Title"] = "Management Reports";
+}
+
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Management Reports
+    </h4>
+    <p class="text-muted">Generate PDF reports and view live summaries</p>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+}
+
+<div class="row g-4">
+
+    <!-- ── CARD 1: Tests Performed by Category ──────────────────── -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-fill text-primary"></i>
+                Tests Performed by Category
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Total verified tests grouped by test category for a selected date range.
+                </p>
+                <form asp-action="TestsByCategory" method="post" id="categoryReportForm">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small py-2"></div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label asp-for="FromDate" class="form-label fw-semibold small"></label>
+                            <input asp-for="FromDate" type="date" class="form-control form-control-sm" />
+                            <span asp-validation-for="FromDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="ToDate" class="form-label fw-semibold small"></label>
+                            <input asp-for="ToDate" type="date" class="form-control form-control-sm" />
+                            <span asp-validation-for="ToDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-eye me-1"></i>Preview
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" id="downloadCatPdf"
+                                style="display:none;">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Live preview table (populated after form submit) -->
+                <div id="catPreview" class="mt-3" style="display:none;">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="table-light">
+                            <tr><th>Category</th><th class="text-center">Tests Verified</th></tr>
+                        </thead>
+                        <tbody id="catPreviewBody"></tbody>
+                        <tfoot id="catPreviewFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 2: Live Stock Levels ─────────────────────────────── -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam text-success"></i>
+                Current Stock Levels
+                <span class="badge bg-secondary ms-auto" id="lowBadge" style="display:none;"></span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:340px;overflow-y:auto;">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Consumable</th>
+                                <th>Supplier</th>
+                                <th class="text-center">On Hand</th>
+                                <th class="text-center">Reorder At</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockTable">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3 small">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center small">
+                <span class="text-muted">Auto-refreshes every 60 s</span>
+                <a asp-action="Consumables" class="text-decoration-none">
+                    Manage Consumables →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 3: Staff Summary ─────────────────────────────────── -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill text-info"></i>Staff Summary
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0 align-middle" id="staffTable">
+                    <thead class="table-light">
+                        <tr><th>Role</th><th class="text-center">Count</th><th class="text-end">Manage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3 small">
+                                <span class="spinner-border spinner-border-sm me-2"></span>Loading…
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CARD 4: Recent Stock Orders ───────────────────────────── -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-cart3 text-warning"></i>Recent Stock Orders
+            </div>
+            <div class="card-body p-0">
+                <div style="max-height:300px;overflow-y:auto;">
+                    <table class="table table-sm mb-0 align-middle" id="ordersTable">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Supplier</th>
+                                <th>Date</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3 small">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-end small">
+                <a asp-action="Orders" class="text-decoration-none">All Orders →</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+    const categoryReportUrl = '@Url.Action("CategoryReportJson", "Manager")';
+    const categoryPdfUrl = '@Url.Action("ManagerTestsByCategory", "Report")';
+    const stockSummaryUrl = '@Url.Action("StockSummaryJson", "Manager")';
+    const staffSummaryUrl = '@Url.Action("StaffSummaryJson", "Manager")';
+    const recentOrdersUrl = '@Url.Action("RecentOrdersJson", "Manager")';
+    const orderDetailsUrl = '@Url.Action("OrderDetails", "Manager")';
+
+    // ── 1. Category Report: AJAX preview ─────────────────────────
+    document.getElementById('categoryReportForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const fd   = new FormData(this);
+        const from = fd.get('FromDate');
+        const to   = fd.get('ToDate');
+        if (!from || !to) return;
+        if (from > to) {
+            alert('From date must be on or before the to date.');
+            return;
+        }
+
+        const params = new URLSearchParams({ from, to });
+        const res  = await fetch(`${categoryReportUrl}?${params}`);
+        if (!res.ok) throw new Error(`Report request failed (${res.status}).`);
+        const data = await res.json();
+
+        const tbody = document.getElementById('catPreviewBody');
+        const tfoot = document.getElementById('catPreviewFoot');
+
+        if (!data.length) {
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted py-2">No verified results in this period.</td></tr>';
+            tfoot.innerHTML = '';
+        } else {
+            let grand = 0;
+            tbody.innerHTML = data.map(d => {
+                grand += d.total;
+                return `<tr><td>${d.category}</td><td class="text-center fw-semibold">${d.total}</td></tr>`;
+            }).join('');
+            tfoot.innerHTML = `<tr class="table-secondary fw-bold"><td>TOTAL</td><td class="text-center">${grand}</td></tr>`;
+        }
+
+        document.getElementById('catPreview').style.display = 'block';
+
+        // Show PDF download button and hook it up
+        const dlBtn = document.getElementById('downloadCatPdf');
+        dlBtn.style.display = '';
+        dlBtn.onclick = function () {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = categoryPdfUrl;
+            const token = document.querySelector('[name=__RequestVerificationToken]').value;
+            form.innerHTML = `
+                <input name="__RequestVerificationToken" value="${token}" />
+                <input name="FromDate" value="${from}" />
+                <input name="ToDate" value="${to}" />`;
+            document.body.appendChild(form);
+            form.submit();
+        };
+    });
+
+    // ── 2. Load stock levels ──────────────────────────────────────
+    async function loadStock() {
+        try {
+            const res  = await fetch(stockSummaryUrl);
+            if (!res.ok) throw new Error(`Stock request failed (${res.status}).`);
+            const data = await res.json();
+            const tbody = document.getElementById('stockTable');
+            let lowCount = 0;
+
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-2 small">No consumables.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(c => {
+                const critical = c.onHand <= c.reorderLevel;
+                const low      = !critical && c.onHand <= c.reorderLevel * 1.1;
+                if (critical || low) lowCount++;
+                const rowCls   = critical ? 'table-danger' : low ? 'table-warning' : '';
+                const badge    = critical
+                    ? '<span class="badge bg-danger">Critical</span>'
+                    : low
+                        ? '<span class="badge bg-warning text-dark">Low</span>'
+                        : '<span class="badge bg-success">OK</span>';
+                return `<tr class="${rowCls}">
+                    <td class="small fw-semibold">${c.name}</td>
+                    <td class="small text-muted">${c.supplier ?? '—'}</td>
+                    <td class="text-center fw-bold ${critical?'text-danger':low?'text-warning':''}">${c.onHand}</td>
+                    <td class="text-center text-muted small">${c.reorderLevel}</td>
+                    <td class="text-center">${badge}</td>
+                </tr>`;
+            }).join('');
+
+            const badge = document.getElementById('lowBadge');
+            if (lowCount > 0) {
+                badge.textContent = lowCount + ' low';
+                badge.className   = 'badge bg-danger ms-auto';
+                badge.style.display = '';
+            } else {
+                badge.style.display = 'none';
+            }
+        } catch (e) {
+            document.getElementById('stockTable').innerHTML =
+                '<tr><td colspan="5" class="text-center text-danger small py-2">Failed to load stock data.</td></tr>';
+        }
+    }
+    loadStock();
+    setInterval(loadStock, 60000);
+
+    // ── 3. Staff summary ──────────────────────────────────────────
+    fetch(staffSummaryUrl)
+        .then(r => {
+            if (!r.ok) throw new Error(`Staff request failed (${r.status}).`);
+            return r.json();
+        })
+        .then(data => {
+            const tbody = document.querySelector('#staffTable tbody');
+            tbody.innerHTML = data.map(d => `
+                <tr>
+                    <td class="fw-semibold"><i class="bi bi-person me-1 text-muted"></i>${d.role}</td>
+                    <td class="text-center"><span class="badge bg-primary">${d.count}</span></td>
+                    <td class="text-end">
+                        ${d.link ? `<a href="${d.link}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                            <i class="bi bi-arrow-right"></i>
+                        </a>` : '<span class="text-muted">—</span>'}
+                    </td>
+                </tr>`).join('');
+        })
+        .catch(() => {
+            document.querySelector('#staffTable tbody').innerHTML =
+                '<tr><td colspan="3" class="text-center text-muted py-2 small">Could not load staff data.</td></tr>';
+        });
+
+    // ── 4. Recent orders ─────────────────────────────────────────
+    fetch(recentOrdersUrl)
+        .then(r => {
+            if (!r.ok) throw new Error(`Orders request failed (${r.status}).`);
+            return r.json();
+        })
+        .then(data => {
+            const tbody = document.querySelector('#ordersTable tbody');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-2 small">No orders yet.</td></tr>';
+                return;
+            }
+            const statusBadge = s => ({
+                'Complete'          : 'bg-success',
+                'PartiallyComplete' : 'bg-warning text-dark',
+                'Cancelled'         : 'bg-danger',
+                'Ordered'           : 'bg-primary'
+            }[s] ?? 'bg-secondary');
+
+            tbody.innerHTML = data.map(o => `
+                <tr>
+                    <td><a href="${orderDetailsUrl}/${encodeURIComponent(o.orderId)}" class="fw-semibold font-monospace small text-decoration-none">${o.orderNumber}</a></td>
+                    <td class="small">${o.supplierName}</td>
+                    <td class="small text-muted">${new Date(o.orderDate).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}</td>
+                    <td class="text-center"><span class="badge ${statusBadge(o.status)}">${o.status}</span></td>
+                </tr>`).join('');
+        })
+        .catch(() => {
+            document.querySelector('#ordersTable tbody').innerHTML =
+                '<tr><td colspan="4" class="text-center text-danger small py-2">Could not load orders.</td></tr>';
+        });
+</script>
+}

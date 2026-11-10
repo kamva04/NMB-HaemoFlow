@@ -1,0 +1,92 @@
+@model NMB_HLabSys.Models.ViewModels.EditResultViewModel
+@{
+    ViewData["Title"] = "Edit Result";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Edit Result</h4>
+    <a asp-action="RequestDetails" asp-route-id="@Model.RequestId" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="EditResult" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="RequestTestId" />
+            <input type="hidden" asp-for="RequestId" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Request</label>
+                        <p class="form-control-plaintext">@Model.RequestNumber</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Test</label>
+                        <p class="form-control-plaintext">@Model.TestName</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Normal Range</label>
+                        <p class="form-control-plaintext">
+                            @if (Model.NormalRangeMin.HasValue && Model.NormalRangeMax.HasValue)
+                            {
+                                @($"{Model.NormalRangeMin:F2} – {Model.NormalRangeMax:F2} {Model.Units}")
+                            }
+                            else
+                            {
+                                <span>—</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Units</label>
+                        <p class="form-control-plaintext">@(Model.Units ?? "—")</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="ResultValue" class="form-label fw-semibold">Result Value</label>
+                        <input asp-for="ResultValue" class="form-control" placeholder="e.g. 12.5" />
+                        <span asp-validation-for="ResultValue" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3 form-check mt-4 pt-2">
+                        <input asp-for="IsAbnormal" class="form-check-input" id="IsAbnormal" />
+                        <label asp-for="IsAbnormal" class="form-check-label fw-semibold text-danger">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Abnormal (creates alert)
+                        </label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label asp-for="ResultNotes" class="form-label fw-semibold">Result Notes</label>
+                        <textarea asp-for="ResultNotes" class="form-control" rows="3" placeholder="Any additional notes..."></textarea>
+                        <span asp-validation-for="ResultNotes" class="text-danger small"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>Save Changes
+                </button>
+                <a asp-action="RequestDetails" asp-route-id="@Model.RequestId" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

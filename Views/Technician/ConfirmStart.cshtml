@@ -1,0 +1,108 @@
+﻿@model NMB_HLabSys.Models.ViewModels.ConfirmStartViewModel
+@{
+    ViewData["Title"] = "Confirm Start";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-play-circle text-success me-2"></i>Confirm &amp; Start Test</h4>
+        <div class="text-muted">Check that all consumables are available before you begin.</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-file-medical me-2"></i>Test Details</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Request #</dt>
+                    <dd class="col-sm-8 font-monospace fw-semibold">@Model.RequestNumber</dd>
+
+                    <dt class="col-sm-4 text-muted">Patient</dt>
+                    <dd class="col-sm-8">@Model.PatientName</dd>
+
+                    <dt class="col-sm-4 text-muted">Test</dt>
+                    <dd class="col-sm-8 fw-bold">@Model.TestName</dd>
+
+                    <dt class="col-sm-4 text-muted">Category</dt>
+                    <dd class="col-sm-8">@Model.CategoryName</dd>
+
+                    <dt class="col-sm-4 text-muted">Sample type</dt>
+                    <dd class="col-sm-8">@Model.SampleType</dd>
+
+                    <dt class="col-sm-4 text-muted">Urgency</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.Urgency == "Stat" ? "bg-danger" : Model.Urgency == "Urgent" ? "bg-warning text-dark" : "bg-secondary")">
+                            @Model.Urgency
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-box-seam me-2"></i>Consumables Required</div>
+            <div class="card-body p-0">
+                @if (!Model.Consumables.Any())
+                {
+                    <div class="p-4">
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle me-2"></i>This test does not require any consumables. You can start immediately.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Consumable</th>
+                                <th class="text-center">Required</th>
+                                <th class="text-center">Available</th>
+                                <th class="text-end pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.Consumables)
+                            {
+                                var hasEnough = c.QuantityOnHand >= c.RequiredQuantity;
+                                <tr>
+                                    <td class="ps-4 fw-semibold">@c.ConsumableName</td>
+                                    <td class="text-center">@c.RequiredQuantity</td>
+                                    <td class="text-center">@c.QuantityOnHand</td>
+                                    <td class="text-end pe-4">
+                                        @if (hasEnough)
+                                        {
+                                            <span class="badge bg-success">OK</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Short</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+    <form asp-action="ConfirmStart" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="requestTestId" value="@Model.RequestTestId" />
+        <input type="hidden" name="confirm" value="true" />
+        <button type="submit" class="btn btn-success btn-lg">
+            <i class="bi bi-play-circle me-1"></i>Confirm &amp; Start Test
+        </button>
+    </form>
+    
+    <a asp-action="TestReadyToStart" class="btn btn-outline-secondary btn-lg">Cancel</a>
+</div>

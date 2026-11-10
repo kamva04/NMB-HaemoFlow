@@ -1,0 +1,63 @@
+﻿@*
+    Usage:
+    <partial name="_PersonDetailsButton" model='new NMB_HLabSys.Models.ViewModels.PersonDetailsButtonModel { PersonType = "Patient", Id = 123 }' />
+*@
+
+@model NMB_HLabSys.Models.ViewModels.PersonDetailsButtonModel
+
+@{
+    string action;
+    string cssClass;
+    string icon;
+    string label;
+
+    switch (Model.PersonType)
+    {
+        case "Patient":
+            action = "PatientDetails";
+            cssClass = "btn-outline-info";
+            icon = "bi-person-badge";
+            label = "Patient details";
+            break;
+        case "Doctor":
+            action = "DoctorDetails";
+            cssClass = "btn-outline-primary";
+            icon = "bi-person-vcard";
+            label = "Doctor details";
+            break;
+        case "Technician":
+            action = "TechnicianDetails";
+            cssClass = "btn-outline-success";
+            icon = "bi-person-gear";
+            label = "Technician details";
+            break;
+        default:
+            action = "Dashboard";
+            cssClass = "btn-outline-secondary";
+            icon = "bi-question-circle";
+            label = "Details";
+            break;
+    }
+
+    var routeValues = new Dictionary<string, string>();
+    if (Model.PersonType == "Patient")
+        routeValues["patientId"] = Model.Id.ToString();
+    else if (Model.PersonType == "Doctor")
+        routeValues["doctorId"] = Model.Id.ToString();
+    else if (Model.PersonType == "Technician")
+        routeValues["technicianId"] = Model.Id.ToString();
+}
+
+@if (routeValues.Count > 0)
+{
+    <a asp-action="@action" asp-all-route-data="routeValues"
+       class="btn btn-sm @cssClass" title="@label">
+        <i class="bi @icon me-1"></i>@label
+    </a>
+}
+else
+{
+    <a asp-action="@action" class="btn btn-sm @cssClass" title="@label">
+        <i class="bi @icon me-1"></i>@label
+    </a>
+}

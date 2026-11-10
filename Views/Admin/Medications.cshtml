@@ -1,0 +1,85 @@
+@* ── Views/Admin/Medications.cshtml ── *@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Medication>
+@{
+    ViewData["Title"] = "Medications";
+    var sortDirection = ViewData["SortDirection"] as string ?? "asc";
+    var sortLabel = sortDirection == "asc" ? "Name A–Z" : "Name Z–A";
+    var sortIcon = sortDirection == "asc" ? "bi-arrow-up" : "bi-arrow-down";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-capsule text-info me-2"></i>Medications</h4>
+    <div class="d-flex gap-2">
+        <button type="button" id="sortMedicalHistory" class="btn btn-outline-secondary"
+                data-direction="@sortDirection" aria-label="Currently sorted @sortLabel. Click to reverse the order."
+                title="Click to reverse the order">
+            <i class="bi @sortIcon me-1" aria-hidden="true"></i><span id="sortMedicalHistoryLabel">@sortLabel</span>
+        </button>
+        <a asp-action="CreateMedication" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add Medication</a>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body p-0">
+        <table id="medicalHistoryTable" class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr><th>Medication</th><th>Category</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var m in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@m.MedicationName</td>
+                        <td class="text-muted">@m.Category?.CategoryName</td>
+                        <td><span class="badge @(m.IsActive ? "bg-success" : "bg-secondary")">@(m.IsActive ? "Active" : "Archived")</span></td>
+                        <td class="text-end">
+                            <a asp-action="EditMedication" asp-route-id="@m.MedicationId" class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="@(m.IsActive ? "DeleteMedication" : "RestoreMedication")" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@m.MedicationId" />
+                                <button type="submit" class="btn btn-sm @(m.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                    <i class="bi @(m.IsActive ? "bi-archive" : "bi-arrow-counterclockwise")"></i>
+                                    @(m.IsActive ? "Archive" : "Restore")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any()) { <tr><td colspan="4" class="text-center text-muted py-4">No medications yet.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    (function () {
+        const button = document.getElementById('sortMedicalHistory');
+        const tbody = document.querySelector('#medicalHistoryTable tbody');
+        if (!button || !tbody) return;
+
+        const icon = button.querySelector('i');
+        const label = document.getElementById('sortMedicalHistoryLabel');
+        const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
+        function sortRows(direction) {
+            const rows = Array.from(tbody.querySelectorAll('tr'))
+                .filter(row => row.cells.length > 1);
+            rows.sort((a, b) => {
+                const comparison = collator.compare(a.cells[0].textContent.trim(), b.cells[0].textContent.trim());
+                return direction === 'asc' ? comparison : -comparison;
+            });
+            rows.forEach(row => tbody.appendChild(row));
+
+            button.dataset.direction = direction;
+            label.textContent = direction === 'asc' ? 'Name A–Z' : 'Name Z–A';
+            icon.className = direction === 'asc' ? 'bi bi-arrow-up me-1' : 'bi bi-arrow-down me-1';
+            button.setAttribute('aria-label', `Currently sorted ${label.textContent}. Click to reverse the order.`);
+        }
+
+        sortRows(button.dataset.direction === 'desc' ? 'desc' : 'asc');
+        button.addEventListener('click', () => {
+            sortRows(button.dataset.direction === 'asc' ? 'desc' : 'asc');
+        });
+    })();
+</script>
+}

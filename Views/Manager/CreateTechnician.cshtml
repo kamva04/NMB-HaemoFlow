@@ -1,0 +1,84 @@
+@* ── Views/Manager/CreateTechnician.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.TechnicianCreateViewModel
+@{
+    ViewData["Title"] = "Register Technician";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-gear me-2"></i>Register Lab Technician</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateTechnician" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Surname" class="form-label fw-semibold"></label>
+                            <input asp-for="Surname" class="form-control" />
+                            <span asp-validation-for="Surname" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="SAIDNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="SAIDNumber" class="form-control" maxlength="13" />
+                            <span asp-validation-for="SAIDNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="EmployeeNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="EmployeeNumber" class="form-control" />
+                            <span asp-validation-for="EmployeeNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="ContactNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactNumber" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                            <div class="form-text">Temporary password will be e-mailed automatically.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">
+                                Assigned Test Types <span class="text-danger">*</span>
+                            </label>
+                            <span asp-validation-for="SelectedTestTypeIds" class="text-danger small d-block mb-2"></span>
+                            <div class="row row-cols-1 row-cols-md-3 g-2">
+                                @foreach (var tt in Model.AvailableTestTypes)
+                                {
+                                    <div class="col">
+                                        <div class="form-check border rounded p-2">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="SelectedTestTypeIds" value="@tt.TestTypeId"
+                                                   id="tt_@tt.TestTypeId"
+                                                   @(Model.SelectedTestTypeIds.Contains(tt.TestTypeId) ? "checked" : "") />
+                                            <label class="form-check-label small" for="tt_@tt.TestTypeId">
+                                                @tt.TestName
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Create & Email</button>
+                        <a asp-action="Technicians" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

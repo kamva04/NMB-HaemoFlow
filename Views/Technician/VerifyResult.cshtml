@@ -1,0 +1,99 @@
+@model NMB_HLabSys.Models.ViewModels.VerifyResultViewModel
+@{
+    ViewData["Title"] = "Verify Result";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-patch-check me-2"></i>Independent Result Verification</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <span class="text-muted small">Request</span>
+                        <div class="fw-semibold">@Model.RequestNumber</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small">Patient</span>
+                        <div class="fw-semibold">@Model.PatientName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small">Test</span>
+                        <div class="fw-semibold">@Model.TestName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small">Performed by</span>
+                        <div class="fw-semibold">@Model.PerformingTechnician</div>
+                    </div>
+                </div>
+
+                <div class="alert @(Model.IsAbnormal ? "alert-danger" : "alert-success")">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="small d-block">Captured result</span>
+                            <span class="fs-2 fw-bold">@(Model.ResultValue?.ToString("F2") ?? "—") @Model.Units</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="small d-block">Normal range</span>
+                            <strong>@Model.NormalRangeMin?.ToString("F2") – @Model.NormalRangeMax?.ToString("F2")</strong>
+                        </div>
+                    </div>
+                    @if (Model.IsAbnormal)
+                    {
+                        <div class="mt-2 fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>ABNORMAL RESULT</div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.ResultNotes))
+                {
+                    <div class="alert alert-light border"><strong>Technician notes:</strong> @Model.ResultNotes</div>
+                }
+
+                <div class="alert alert-info small">
+                    <i class="bi bi-shield-check me-1"></i>You cannot verify a result you performed. Any other technician may complete this independent verification.
+                </div>
+
+                <form asp-action="VerifyResult" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="RequestTestId" type="hidden" />
+                    <div asp-validation-summary="All" class="alert alert-danger"></div>
+
+                    <fieldset class="mb-3">
+                        <legend class="form-label fw-semibold fs-6">Decision <span class="text-danger">*</span></legend>
+                        <div class="d-flex flex-column flex-sm-row gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="IsApproved" id="approve"
+                                       value="true" checked="@(Model.IsApproved == true)" required />
+                                <label class="form-check-label text-success fw-semibold" for="approve">Approve &amp; Verify</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="IsApproved" id="return"
+                                       value="false" checked="@(Model.IsApproved == false)" required />
+                                <label class="form-check-label text-danger fw-semibold" for="return">Return for Review</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="mb-4">
+                        <label asp-for="ReviewNote" class="form-label fw-semibold">Review note</label>
+                        <textarea asp-for="ReviewNote" class="form-control" rows="4"
+                                  placeholder="Required when returning a result for review."></textarea>
+                        <span asp-validation-for="ReviewNote" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-warning"><i class="bi bi-send me-1"></i>Submit Decision</button>
+                        <a asp-action="TestDetails" asp-route-requestTestId="@Model.RequestTestId"
+                           class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

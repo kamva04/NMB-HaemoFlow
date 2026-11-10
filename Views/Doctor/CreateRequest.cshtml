@@ -1,0 +1,113 @@
+@* ── Views/Doctor/CreateRequest.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.CreateTestRequestViewModel
+@{
+    ViewData["Title"] = "New Test Request";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard2-plus me-2"></i>
+                    New Test Request – <strong>@Model.PatientName</strong>
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateRequest" method="post" id="reqForm">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="PatientId" type="hidden" />
+                    <input asp-for="PatientName" type="hidden" />
+
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label asp-for="Urgency" class="form-label fw-semibold"></label>
+                            <select asp-for="Urgency" class="form-select">
+                                <option value="Routine">Routine</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="Stat">STAT</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ClinicalNotes" class="form-label fw-semibold"></label>
+                            <textarea asp-for="ClinicalNotes" class="form-control" rows="3"
+                                      placeholder="Relevant clinical information for the lab technician…"></textarea>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Test Types <span class="text-danger">*</span></h6>
+                    <span asp-validation-for="SelectedTestTypeIds" class="text-danger small"></span>
+                    <div class="mb-4">
+                        @foreach (var category in Model.AvailableTestTypes
+                            .GroupBy(t => t.Category?.CategoryName ?? "Other")
+                            .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
+                        {
+                            <section class="border rounded mb-3">
+                                <h6 class="bg-light border-bottom fw-semibold p-2 mb-0">@category.Key</h6>
+                                <div class="row row-cols-1 row-cols-md-3 g-2 p-2">
+                                    @foreach (var tt in category.OrderBy(t => t.TestName, StringComparer.OrdinalIgnoreCase))
+                                    {
+                                        <div class="col">
+                                            <div class="form-check border rounded p-2 h-100">
+                                                <input class="form-check-input test-type-check" type="checkbox"
+                                                       name="SelectedTestTypeIds" value="@tt.TestTypeId"
+                                                       id="tt_@tt.TestTypeId"
+                                                       data-test-name="@tt.TestName"
+                                                       data-sample-type-id="@tt.SampleTypeId"
+                                                       data-sample-type-name="@tt.SampleType?.TypeName" />
+                                                <label class="form-check-label small" for="tt_@tt.TestTypeId">
+                                                    <span class="fw-semibold">@tt.TestName</span><br />
+                                                    <span class="text-muted">@tt.SampleType?.TypeName</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    </div>
+
+                    <div id="samplesNeeded" class="alert alert-info small mb-3" style="display:none;">
+                        <i class="bi bi-upc-scan me-1"></i>
+                        <strong>Barcode assignment:</strong> One sample barcode is generated automatically for each selected test type. Sample details are locked after request submission.
+                        <div id="samplesNeededList" class="mt-2"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send me-1"></i>Submit Request
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateSamplesNeeded() {
+            const checked = [...document.querySelectorAll('.test-type-check:checked')];
+            const box = document.getElementById('samplesNeeded');
+            const list = document.getElementById('samplesNeededList');
+            if (!checked.length) {
+                box.style.display = 'none';
+                return;
+            }
+            list.replaceChildren(...checked.map((checkbox, index) => {
+                const row = document.createElement('div');
+                row.textContent = `${index + 1}. ${checkbox.dataset.testName} — ${checkbox.dataset.sampleTypeName || 'Sample type not configured'} (barcode generated on submit)`;
+                return row;
+            }));
+            box.style.display = 'block';
+        }
+
+        document.querySelectorAll('.test-type-check').forEach(cb => {
+            cb.addEventListener('change', updateSamplesNeeded);
+        });
+    </script>
+    <partial name="_ValidationScriptsPartial" />
+}

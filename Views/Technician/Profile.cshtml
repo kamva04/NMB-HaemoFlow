@@ -1,0 +1,138 @@
+﻿@model NMB_HLabSys.Models.ViewModels.TechnicianProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-person-circle text-primary me-2"></i>My Profile</h3>
+        <div class="text-muted">Manage your personal details and password.</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3">
+
+    @* LEFT: Profile picture + identity *@
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-image me-2"></i>Profile picture</div>
+            <div class="card-body text-center">
+
+                @if (!string.IsNullOrWhiteSpace(Model.ProfilePicturePath))
+                {
+                    <img src="@Model.ProfilePicturePath" alt="Profile picture"
+                         class="rounded-circle mb-3"
+                         style="width: 140px; height: 140px; object-fit: cover; border: 3px solid #e9ecef;" />
+                }
+                else
+                {
+                    <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center mb-3"
+                         style="width: 140px; height: 140px; font-size: 3rem;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                }
+
+                <div class="fw-bold fs-5">@Model.FullName</div>
+                <div class="text-muted small mb-3">@Model.EmployeeNumber</div>
+
+                <hr />
+
+                <dl class="row text-start mb-0">
+                    <dt class="col-6 text-muted small">Employee number</dt>
+                    <dd class="col-6 font-monospace small">@Model.EmployeeNumber</dd>
+
+                    <dt class="col-6 text-muted small">SA ID number</dt>
+                    <dd class="col-6 font-monospace small">@Model.SouthAfricanId</dd>
+
+                    <dt class="col-6 text-muted small">Email</dt>
+                    <dd class="col-6 small text-break">@Model.Email</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    @* RIGHT: Personal details form *@
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-person-lines-fill me-2"></i>Personal details</div>
+            <div class="card-body">
+                <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TechnicianId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full name</label>
+                            <input class="form-control" value="@Model.FullName" readonly disabled />
+                            <div class="form-text">Managed by the laboratory manager.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Employee number</label>
+                            <input class="form-control font-monospace" value="@Model.EmployeeNumber" readonly disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">SA ID number</label>
+                            <input class="form-control font-monospace" value="@Model.SouthAfricanId" readonly disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" value="@Model.Email" readonly disabled />
+                            <div class="form-text">Use the navbar "Email" link to change this.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ContactNumber" class="form-label"></label>
+                            <input asp-for="ContactNumber" class="form-control" placeholder="e.g. 082 555 1234" />
+                            <span asp-validation-for="ContactNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="ProfilePictureFile" class="form-label"></label>
+                            <input asp-for="ProfilePictureFile" type="file" accept="image/*" class="form-control" />
+                            <div class="form-text">JPG, PNG, GIF or WebP. Max 2 MB.</div>
+                        </div>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>Save changes
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold"><i class="bi bi-shield-lock me-2"></i>Password</div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Passwords must be at least 8 characters, with one uppercase letter, one number, and one special character.
+                </p>
+                <a asp-action="ChangePassword" class="btn btn-warning">
+                    <i class="bi bi-key me-1"></i>Change password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

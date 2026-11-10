@@ -1,0 +1,47 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Supplier>
+@{
+    ViewData["Title"] = "Suppliers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-truck text-primary me-2"></i>Suppliers</h4>
+    <a asp-action="CreateSupplier" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add Supplier</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr><th>Supplier Name</th><th>Contact Person</th><th>Email</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@s.SupplierName @if (s.IsDeleted) { <span class="badge bg-secondary ms-2">Archived</span> }</td>
+                        <td>@(s.ContactPerson ?? "—")</td>
+                        <td class="text-muted small">@s.Email</td>
+                        <td class="text-end">
+                            <a asp-action="EditSupplier" asp-route-id="@s.SupplierId" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="@(s.IsDeleted ? "RestoreSupplier" : "DeleteSupplier")" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@s.SupplierId" />
+                                <button type="submit" class="btn btn-sm @(s.IsDeleted ? "btn-outline-success" : "btn-outline-danger")"
+                                        onclick="return confirm(this.dataset.confirm)"
+                                        data-confirm="@(s.IsDeleted ? "Restore this record?" : "Archive this record? Its history will be preserved.")">
+                                    @(s.IsDeleted ? "Restore" : "Archive")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="4" class="text-center text-muted py-4">No suppliers yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

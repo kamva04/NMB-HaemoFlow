@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Patient Results";
+    var patient = ViewBag.Patient as NMB_HLabSys.Models.Domain.Patient;
+    var requests = (ViewBag.Requests as IEnumerable<NMB_HLabSys.Models.Domain.TestRequest>
+                   ?? Enumerable.Empty<NMB_HLabSys.Models.Domain.TestRequest>()).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-file-medical text-primary me-2"></i>
+            Results – @patient?.Name @patient?.Surname
+        </h4>
+        <p class="text-muted mb-0 small">
+            <i class="bi bi-shield-check text-success me-1"></i>
+            You have patient consent to view these results.
+        </p>
+    </div>
+    <a asp-action="PatientDetails" asp-route-id="@patient?.PatientId"
+       class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Patient
+    </a>
+</div>
+
+@if (!requests.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        No completed or released results are available for this patient yet.
+    </div>
+}
+else
+{
+    @foreach (var req in requests)
+    {
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center py-2"
+                 style="cursor:pointer;"
+                 data-bs-toggle="collapse"
+                 data-bs-target="#req_@req.RequestId"
+                 aria-expanded="true">
+                <div>
+                    <span class="font-monospace fw-bold small">@req.RequestNumber</span>
+                    <span class="text-muted small ms-3">
+                        <i class="bi bi-calendar3 me-1"></i>@req.RequestDate.ToString("dd MMM yyyy")
+                    </span>
+                    <span class="badge ms-2 @(req.Urgency == "Stat" ? "badge-stat" : req.Urgency == "Urgent" ? "badge-urgent" : "badge-routine")">
+                        @req.Urgency
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge @(req.Status == "ReleasedByDoctor" ? "bg-success" : req.Status == "Completed" ? "bg-info text-dark" : "bg-secondary")">
+                        @req.Status
+                    </span>
+                    <a asp-action="RequestDetails" asp-route-id="@req.RequestId"
+                       class="btn btn-sm btn-outline-primary"
+                       onclick="event.stopPropagation()">
+                        <i class="bi bi-eye me-1"></i>Full View
+                    </a>
+                    <a asp-controller="Report" asp-action="RequestResultPdf"
+                       asp-route-requestId="@req.RequestId"
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="event.stopPropagation()">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                    </a>
+                    @if (req.Status is "Completed" or "ReleasedByDoctor")
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                                data-bs-toggle="modal" data-bs-target="#emailModal_@req.RequestId"
+                                onclick="event.stopPropagation()">
+                            <i class="bi bi-envelope me-1"></i>Email
+                        </button>
+                    }
+                </div>
+            </div>
+            @if (req.Status is "Completed" or "ReleasedByDoctor")
+            {
+                <div class="modal fade" id="emailModal_@req.RequestId" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">Email Results</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form asp-controller="Doctor" asp-action="EmailResults" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="requestId" value="@req.RequestId" />
+                                <div class="modal-body">
+                                    <p class="text-muted small">The verified results PDF will be attached to the patient email.</p>
+                                    <label class="form-label fw-semibold">Message to patient</label>
+                                    <textarea name="message" class="form-control" rows="4"
+                                              placeholder="Please find your laboratory results attached..."></textarea>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-send me-1"></i>Send Email
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="collapse show" id="req_@req.RequestId">
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Test</th>
+                                <th class="text-center">Result</th>
+                                <th class="text-center">Units</th>
+                                <th class="text-center">Normal Range</th>
+                                <th class="text-center">Flag</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results_@req.RequestId">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-2 small">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Loading…
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        const requestIds = [@Html.Raw(string.Join(",", requests.Select(r => r.RequestId)))];
+        const requestResultsUrl = '@Url.Action("RequestResultsJson", "Doctor")';
+
+        requestIds.forEach(reqId => {
+            const url = new URL(requestResultsUrl, window.location.origin);
+            url.searchParams.set('requestId', reqId);
+
+            fetch(url.toString())
+                .then(r => {
+                    if (!r.ok) throw new Error(`Results request failed (${r.status}).`);
+                    return r.json();
+                })
+                .then(tests => {
+                    const tbody = document.getElementById(`results_${reqId}`);
+                    if (!tbody) return;
+                    if (!tests.length) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-2 small">No verified results yet.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = tests.map(t => {
+                        const abnCls = t.isAbnormal ? 'text-danger fw-bold' : '';
+                        const rowCls = t.isAbnormal ? 'alert-abnormal' : '';
+                        const flag   = t.isAbnormal
+                            ? '<span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>Abnormal</span>'
+                            : '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Normal</span>';
+                        const range  = (t.normalRangeMin !== null && t.normalRangeMax !== null)
+                            ? `${Number(t.normalRangeMin).toFixed(2)} – ${Number(t.normalRangeMax).toFixed(2)}`
+                            : '—';
+                        const val    = t.resultValue !== null ? Number(t.resultValue).toFixed(2) : '—';
+                        return `<tr class="${rowCls}">
+                            <td class="small fw-semibold">${t.testName}</td>
+                            <td class="text-center ${abnCls}">${val}</td>
+                            <td class="text-center text-muted small">${t.units ?? '—'}</td>
+                            <td class="text-center text-muted small">${range}</td>
+                            <td class="text-center">${flag}</td>
+                        </tr>`;
+                    }).join('');
+                })
+                .catch(() => {
+                    const tbody = document.getElementById(`results_${reqId}`);
+                    if (tbody)
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-2 small">Failed to load results.</td></tr>';
+                });
+        });
+    </script>
+}

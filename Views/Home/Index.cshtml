@@ -1,0 +1,1049 @@
+@{
+    ViewData["Title"] = "Welcome";
+    ViewData["IsLandingPage"] = true;
+}
+
+<style>
+    /* ═══════════════════════════════════════════════════════════════
+           PAGE BACKGROUND — one continuous image behind Hero→Stats
+           ═══════════════════════════════════════════════════════════════ */
+    body {
+        background-color: #f4f7fb;
+    }
+
+    .image-backdrop {
+        position: relative;
+        background-image: url('/images/lab-hero1.jpg');
+        background-size: cover;
+        background-position: center top;
+        background-repeat: no-repeat;
+        overflow: hidden;
+    }
+        /* LIGHT overlay — image clearly visible */
+        .image-backdrop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient( 180deg, rgba(13, 59, 102, 0.30) 0%, rgba(13, 59, 102, 0.45) 40%, rgba(13, 59, 102, 0.55) 100% );
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .image-backdrop > * {
+            position: relative;
+            z-index: 1;
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           HERO
+           ═══════════════════════════════════════════════════════════════ */
+    .hero-section {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 100px 20px;
+        position: relative;
+    }
+
+    .hero-content {
+        color: #fff;
+        max-width: 800px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.85), 0 6px 24px rgba(0,0,0,0.7);
+    }
+
+    /* ── Hero logo (icon OR image) ── */
+    .hero-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 0 6px rgba(255, 255, 255, 0.18);
+        margin-bottom: 28px;
+        color: #0d3b66;
+        font-size: 3rem;
+        text-shadow: none;
+        overflow: hidden;
+    }
+        /* If you use an IMAGE logo, this class handles it */
+        .hero-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+    .hero-content h1 {
+        font-size: 3.4rem;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+    }
+
+    .hero-content p.lead {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        opacity: 1;
+    }
+
+    .hero-content .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        text-shadow: none;
+    }
+
+    .hero-content .btn-hero-primary {
+        background: #1a8fe3;
+        border: none;
+        color: #fff;
+        padding: 14px 34px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        border-radius: 50px;
+        transition: all 0.2s;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+        .hero-content .btn-hero-primary:hover {
+            background: #0d6efd;
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+        }
+
+    .hero-content .btn-hero-outline {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid #fff;
+        color: #fff;
+        padding: 12px 32px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        border-radius: 50px;
+        transition: all 0.2s;
+        backdrop-filter: blur(6px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+        .hero-content .btn-hero-outline:hover {
+            background: #fff;
+            color: #0d3b66;
+            transform: translateY(-2px);
+        }
+
+    .hero-content .staff-note {
+        margin-top: 1.6rem;
+        font-size: 0.95rem;
+        opacity: 1;
+    }
+
+    .hero-scroll {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.9);
+        font-size: 1.8rem;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        animation: hero-bounce 2s infinite;
+    }
+
+    @@keyframes hero-bounce {
+        0%, 100% {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        50% {
+            transform: translateX(-50%) translateY(8px);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+           SECTION SHARED
+           ═══════════════════════════════════════════════════════════════ */
+    .section-pad {
+        padding: 80px 20px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #fff;
+        text-align: center;
+        margin-bottom: 0.6rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.85), 0 6px 20px rgba(0,0,0,0.6);
+    }
+
+    .section-subtitle {
+        text-align: center;
+        color: #fff;
+        font-size: 1rem;
+        margin-bottom: 3rem;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.85), 0 4px 16px rgba(0,0,0,0.6);
+    }
+
+    .about-panel {
+        background: rgba(255, 255, 255, 0.97);
+        border-radius: 16px;
+        padding: 40px 32px;
+        max-width: 900px;
+        margin: 0 auto;
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(6px);
+    }
+
+        .about-panel p {
+            color: #334155;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin: 0;
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           FEATURE TILES
+           ═══════════════════════════════════════════════════════════════ */
+    .feature-tile {
+        background: #fff;
+        border-radius: 14px;
+        padding: 32px 24px;
+        height: 100%;
+        text-align: center;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        transition: all 0.25s;
+    }
+
+        .feature-tile:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+            border-color: #1a8fe3;
+        }
+
+        .feature-tile .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0d3b66 0%, #1a8fe3 100%);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            margin-bottom: 18px;
+        }
+
+        .feature-tile h5 {
+            color: #0d3b66;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .feature-tile p {
+            color: #6c757d;
+            font-size: 0.92rem;
+            margin: 0;
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           ROLE CARDS
+           ═══════════════════════════════════════════════════════════════ */
+    .role-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 28px 20px;
+        text-align: center;
+        height: 100%;
+        border-top: 4px solid #1a8fe3;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+        transition: all 0.25s;
+    }
+
+        .role-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+        }
+
+        .role-card .role-icon {
+            font-size: 2.4rem;
+            color: #0d3b66;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .role-card h6 {
+            color: #0d3b66;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+        }
+
+        .role-card p {
+            color: #6c757d;
+            font-size: 0.88rem;
+            margin: 0;
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           STATS STRIP
+           ═══════════════════════════════════════════════════════════════ */
+    .stats-strip {
+        padding: 60px 20px;
+    }
+
+    .stat-block {
+        text-align: center;
+    }
+
+        .stat-block .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #4fc3f7;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.85), 0 6px 24px rgba(0,0,0,0.7);
+        }
+
+        .stat-block .stat-label {
+            font-size: 0.95rem;
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.85), 0 4px 16px rgba(0,0,0,0.6);
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           CONTACT — image ends here
+           ═══════════════════════════════════════════════════════════════ */
+    .contact-section {
+        padding: 80px 20px;
+        background: #f4f7fb;
+    }
+
+        .contact-section .section-title {
+            color: #0d3b66;
+            text-shadow: none;
+        }
+
+        .contact-section .section-subtitle {
+            color: #6c757d;
+            text-shadow: none;
+        }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+        .contact-item i {
+            color: #1a8fe3;
+            font-size: 1.4rem;
+            margin-top: 3px;
+        }
+
+        .contact-item strong {
+            color: #0d3b66;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .contact-item span {
+            color: #495057;
+            font-size: 0.94rem;
+        }
+
+    .map-frame {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+        height: 340px;
+    }
+
+        .map-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+    /* ═══════════════════════════════════════════════════════════════
+           FLOATING CHAT WIDGET
+           ═══════════════════════════════════════════════════════════════ */
+    #chat-fab {
+        position: fixed;
+        bottom: 26px;
+        right: 26px;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(41,182,246,0.45);
+        z-index: 1040;
+        border: 3px solid rgba(255,255,255,0.25);
+        transition: transform 0.2s;
+        animation: chat-pulse 3s ease-in-out infinite;
+    }
+
+        #chat-fab:hover {
+            transform: scale(1.08);
+        }
+
+    @@keyframes chat-pulse {
+        0%, 100% {
+            box-shadow: 0 8px 24px rgba(41,182,246,0.45);
+        }
+
+        50% {
+            box-shadow: 0 14px 36px rgba(41,182,246,0.75);
+        }
+    }
+
+    #chat-panel {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        max-width: 95vw;
+        max-height: 600px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 1050;
+    }
+
+        #chat-panel.open {
+            display: flex;
+        }
+
+        #chat-panel .chat-head {
+            background: linear-gradient(135deg, #4fc3f7, #29b6f6);
+            color: #fff;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            #chat-panel .chat-head h6 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 1rem;
+            }
+
+            #chat-panel .chat-head .btn-close-chat {
+                background: rgba(255,255,255,0.22);
+                border: none;
+                color: #fff;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+
+                #chat-panel .chat-head .btn-close-chat:hover {
+                    background: rgba(255,255,255,0.35);
+                }
+
+    #chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 18px;
+        background: #f8f9fa;
+        min-height: 220px;
+        max-height: 340px;
+    }
+
+    .msg-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+        .msg-row.user {
+            flex-direction: row-reverse;
+        }
+
+    .msg-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .msg-row.bot .msg-avatar {
+        background: #29b6f6;
+    }
+
+    .msg-row.user .msg-avatar {
+        background: #0d6efd;
+    }
+
+    .msg-bubble {
+        background: #fff;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 0.92rem;
+        max-width: 78%;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        white-space: pre-line;
+    }
+
+    .msg-row.user .msg-bubble {
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .chat-quick {
+        padding: 8px 12px 0;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        background: #fff;
+        border-top: 1px solid #eef1f5;
+    }
+
+        .chat-quick button {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            font-size: 0.76rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            color: #475569;
+        }
+
+            .chat-quick button:hover {
+                background: #0d6efd;
+                color: #fff;
+                border-color: #0d6efd;
+            }
+
+    .chat-input {
+        padding: 12px;
+        display: flex;
+        gap: 8px;
+        background: #fff;
+        border-top: 1px solid #eef1f5;
+    }
+
+        .chat-input input {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: 22px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+            .chat-input input:focus {
+                border-color: #1a8fe3;
+            }
+
+        .chat-input button {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #29b6f6;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+            .chat-input button:hover {
+                background: #0288d1;
+            }
+
+    .chat-foot {
+        text-align: center;
+        font-size: 0.74rem;
+        color: #adb5bd;
+        padding: 6px 0 10px;
+        background: #fff;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════ */
+    @@media (max-width: 767.98px) {
+        .hero-logo {
+            width: 90px;
+            height: 90px;
+            font-size: 2.4rem;
+        }
+
+        .hero-content h1 {
+            font-size: 2.2rem;
+        }
+
+        .hero-content p.lead {
+            font-size: 1rem;
+        }
+
+        .section-pad {
+            padding: 55px 15px;
+        }
+
+        .stat-block .stat-number {
+            font-size: 2rem;
+        }
+
+        .map-frame {
+            height: 260px;
+        }
+
+        #chat-fab {
+            width: 56px;
+            height: 56px;
+            font-size: 1.4rem;
+            bottom: 18px;
+            right: 18px;
+        }
+
+        .about-panel {
+            padding: 28px 22px;
+        }
+    }
+</style>
+<link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     BACKDROP WRAPPER — image covers Hero → About → Features → Roles → Stats
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="image-backdrop">
+
+    <!-- HERO -->
+    <section class="hero-section" aria-labelledby="welcome-title">
+        <div class="hero-photo-background" aria-hidden="true">
+            <img class="hero-photo hero-photo-care" src="~/images/hero-care.jpg" asp-append-version="true" alt="" />
+            <img class="hero-photo hero-photo-surgery" src="~/images/hero-surgery.jpg" asp-append-version="true" alt="" />
+        </div>
+        <div class="container hero-grid">
+            <div class="hero-content">
+                <p class="hero-eyebrow"><span></span> CONNECTING PEOPLE. SUPPORTING CARE.</p>
+                <h1 id="welcome-title">Better connected.<br /><span>From test to result.</span></h1>
+                <p class="lead">Welcome to NMB-HLabSys. Your connection to Nelson Mandela Bay Haematology Diagnostic Laboratories — from test requests to verified results, in one place.</p>
+                <div class="hero-buttons">
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-hero-primary">Login to your account <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></a>
+                    <a asp-controller="Patient" asp-action="Register" class="btn btn-hero-outline">Register as a patient</a>
+                </div>
+                <p class="staff-note">Laboratory staff and doctors: use the login details provided by your laboratory.</p>
+                <div class="hero-highlights"><span><i class="bi bi-upc-scan" aria-hidden="true"></i> Track your requests</span><span><i class="bi bi-file-earmark-check" aria-hidden="true"></i> Access released results</span></div>
+            </div>
+            <div class="hero-identity">
+                <div class="identity-label">CARE AT THE HEART OF EVERY TEST</div>
+                <img src="~/images/nmb-hlabsys-logo.jpg" asp-append-version="true" alt="NMB-HLabSys logo: caring hands supporting a heart and heartbeat" width="800" height="800" fetchpriority="high" />
+                <div class="identity-name">NMB-HLabSys</div>
+                <p>Haematology laboratory management</p>
+                <div class="identity-colors" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            </div>
+        </div>
+    </section>
+    <!-- ABOUT -->
+    <section id="about" class="section-pad about-section" aria-labelledby="about-title">
+        <div class="container">
+            <div class="about-intro-grid">
+                <figure class="about-photo">
+                    <img src="~/images/hero-team.jpg" asp-append-version="true" alt="Medical professionals standing together in a hospital corridor" width="736" height="736" loading="lazy" />
+                    <figcaption><i class="bi bi-heart-pulse" aria-hidden="true"></i> Connecting people. Supporting care.</figcaption>
+                </figure>
+                <div class="about-copy">
+                    <p class="about-eyebrow">ABOUT US</p>
+                    <h2 id="about-title">Supporting better care through connected diagnostics</h2>
+                    <p class="about-lead">A simpler connection between the people requesting tests and the people delivering results.</p>
+                    <p>NMB-HLabSys brings doctors, laboratory teams, and patients together at Nelson Mandela Bay Haematology Diagnostic Laboratories. From a test request to a verified result, it keeps the process organised and easier to follow.</p>
+                    <p>By bringing requests, progress updates, and released results into one place, we help teams stay informed and focused on patient care.</p>
+                    <a class="about-feature-link" href="#features">Explore our features <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </div>
+            <div class="about-steps">
+                <article class="about-step">
+                    <span class="about-step-icon"><i class="bi bi-clipboard2-pulse" aria-hidden="true"></i></span>
+                    <h3>Request tests</h3>
+                    <p>Submit test requests with the information the laboratory needs, all in one place.</p>
+                </article>
+                <article class="about-step">
+                    <span class="about-step-icon"><i class="bi bi-hourglass-split" aria-hidden="true"></i></span>
+                    <h3>Track progress</h3>
+                    <p>Follow each request as it moves through the laboratory, from sample reception to review.</p>
+                </article>
+                <article class="about-step">
+                    <span class="about-step-icon"><i class="bi bi-file-earmark-check" aria-hidden="true"></i></span>
+                    <h3>Access verified results</h3>
+                    <p>View released results once the laboratory has completed its verification process.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- KEY FEATURES -->
+    <section id="features" class="section-pad">
+        <div class="features-photos" aria-hidden="true">
+            <img class="features-photo features-photo-samples" src="~/images/features-samples.jpg" asp-append-version="true" alt="" loading="lazy" />
+            <img class="features-photo features-photo-lab" src="~/images/features-lab.jpg" asp-append-version="true" alt="" loading="lazy" />
+            <img class="features-photo features-photo-team" src="~/images/features-team.jpg" asp-append-version="true" alt="" loading="lazy" />
+        </div>
+        <div class="container">
+            <h2 class="section-title">Key Features</h2>
+            <p class="section-subtitle">
+                Everything a modern diagnostic laboratory needs — from sample drop&#8209;off
+                to verified results.
+            </p>
+
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-upc-scan"></i></div>
+                        <h5>Sample Verification</h5>
+                        <p>Barcode-driven sample reception with request number lookup — no typos, no lost samples.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+                        <h5>Test Request Workflow</h5>
+                        <p>From doctor submission to released result — every step tracked and timestamped.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-patch-check"></i></div>
+                        <h5>Two-Step Verification</h5>
+                        <p>Every result is independently verified by a second technician before release.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-bell"></i></div>
+                        <h5>Real-Time Alerts</h5>
+                        <p>Live turnaround countdowns, overdue alerts, and in-app notifications for every technician.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-box-seam"></i></div>
+                        <h5>Consumable Management</h5>
+                        <p>Track stock levels, request replenishment, and remove items that are no longer used.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-tile">
+                        <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+                        <h5>PDF Reports</h5>
+                        <p>Download professional lab reports by date range — per test category or per patient.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROLES -->
+    <section id="roles" class="section-pad">
+        <div class="container">
+            <h2 class="section-title">Built for Every Role</h2>
+            <p class="section-subtitle">One system, five tailored experiences.</p>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="role-card">
+                        <i class="bi bi-heart-pulse role-icon"></i>
+                        <h6>Doctors</h6>
+                        <p>Submit requests, review results, release to patients.</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="role-card">
+                        <i class="bi bi-eyedropper role-icon"></i>
+                        <h6>Technicians</h6>
+                        <p>Receive samples, capture results, verify.</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="role-card">
+                        <i class="bi bi-bar-chart-line role-icon"></i>
+                        <h6>Managers</h6>
+                        <p>Oversee catalogue, stock, staff, and reports.</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="role-card">
+                        <i class="bi bi-person-heart role-icon"></i>
+                        <h6>Patients</h6>
+                        <p>Track requests, view results, manage consent.</p>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="role-card">
+                        <i class="bi bi-shield-lock role-icon"></i>
+                        <h6>Admin</h6>
+                        <p>Maintain reference data and system catalogues.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats-strip" aria-label="System at a glance">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-6 col-md-3">
+                    <div class="stat-block">
+                        <i class="bi bi-people stat-icon" aria-hidden="true"></i>
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">User Roles</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-block">
+                        <i class="bi bi-eyedropper stat-icon" aria-hidden="true"></i>
+                        <div class="stat-number">20+</div>
+                        <div class="stat-label">Test Types</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-block">
+                        <i class="bi bi-clock-history stat-icon" aria-hidden="true"></i>
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Sample Tracking</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-block">
+                        <i class="bi bi-heart-pulse stat-icon" aria-hidden="true"></i>
+                        <div class="stat-number">SDG&nbsp;3</div>
+                        <div class="stat-label">Good Health &amp; Well-being</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+<!-- ═══ END OF IMAGE-BACKDROP ═══ -->
+<!-- ═══════════════════════════════════════════════════════════════════
+     CONTACT + MAP — plain light background (image ends here)
+     ═══════════════════════════════════════════════════════════════════ -->
+<section id="contact" class="contact-section">
+    <div class="container">
+        <h2 class="section-title">Contact Us</h2>
+        <p class="section-subtitle">Get in touch with the laboratory, or visit us in person.</p>
+
+        <div class="row g-5">
+            <div class="col-md-5">
+                <div class="contact-card">
+                <div class="contact-item">
+                    <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                    <div>
+                        <strong>Address</strong>
+                        <span>
+                            Nelson Mandela Bay Haematology Diagnostic Laboratories<br />
+                           Stanford Rd &, Lindsay Rd, Lindsay Road, Gqeberha, 6020
+                        </span>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                    <div>
+                        <strong>Email</strong>
+                        <a href="mailto:kamvakayvee367@gmail.com">kamvakayvee367@gmail.com</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+                    <div>
+                        <strong>Phone</strong>
+                        <a href="tel:+27415550000">+27 41 555 0000</a>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="bi bi-clock-fill" aria-hidden="true"></i>
+                    <div>
+                        <strong>Lab Hours</strong>
+                        <span>
+                            Monday – Friday: 07:00 – 18:00<br />
+                            Saturday: 08:00 – 13:00<br />
+                            Sunday &amp; Public Holidays: Closed
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+            <div class="col-md-7">
+                <div class="map-frame">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.611390293837!2d25.567125075262148!3d-33.92539997320493!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1e7ad3e2ff7c38df%3A0xca86c39bb0ff373f!2sLivingstone%20Hospital!5e0!3m2!1sen!2sza!4v1758047557908!5m2!1sen!2sza"
+                            allowfullscreen=""
+                            title="Laboratory location map" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     FLOATING CHAT WIDGET
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="chat-fab" title="Chat with NMB Assistant">
+    <i class="bi bi-chat-dots-fill"></i>
+</div>
+
+<div id="chat-panel">
+    <div class="chat-head">
+        <h6><i class="bi bi-robot me-2"></i>NMB Assistant</h6>
+        <button type="button" class="btn-close-chat" id="chat-close" aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div id="chat-messages">
+        <div class="msg-row bot">
+            <div class="msg-avatar"><i class="bi bi-robot"></i></div>
+            <div class="msg-bubble">
+                Hello! I'm NMB Assistant. I can help you with:
+
+                • Submitting a test request
+                • Lab hours &amp; location
+                • Test types offered
+                • Result turnaround times
+                • Account &amp; password help
+
+                How can I help you today?
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-quick">
+        <button type="button" data-q="How do I submit a test request?">📋 Submit request</button>
+        <button type="button" data-q="What are your lab hours?">⏰ Lab hours</button>
+        <button type="button" data-q="What test types do you offer?">🔬 Test types</button>
+        <button type="button" data-q="How do I check my results?">📄 Results</button>
+        <button type="button" data-q="I forgot my password">🔒 Account help</button>
+    </div>
+
+    <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Ask a question…" maxlength="300" autocomplete="off" />
+        <button type="button" id="chat-send"><i class="bi bi-send"></i></button>
+    </div>
+
+    <div class="chat-foot">AI-powered • 24/7 Support</div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var fab      = document.getElementById('chat-fab');
+            var panel    = document.getElementById('chat-panel');
+            var closeBtn = document.getElementById('chat-close');
+            var input    = document.getElementById('chat-input');
+            var sendBtn  = document.getElementById('chat-send');
+            var messages = document.getElementById('chat-messages');
+
+            function openPanel()  { panel.classList.add('open');  fab.style.display = 'none';  input.focus(); }
+            function closePanel() { panel.classList.remove('open'); fab.style.display = 'flex'; }
+
+            fab.addEventListener('click', openPanel);
+            closeBtn.addEventListener('click', closePanel);
+            sendBtn.addEventListener('click', handleSend);
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
+            });
+
+            document.querySelectorAll('.chat-quick button').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    input.value = b.getAttribute('data-q');
+                    handleSend();
+                });
+            });
+
+            function escapeHtml(s) {
+                var d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
+
+            function appendMessage(text, sender) {
+                var row = document.createElement('div');
+                row.className = 'msg-row ' + sender;
+                var avatar = sender === 'bot'
+                    ? '<i class="bi bi-robot"></i>'
+                    : '<i class="bi bi-person-fill"></i>';
+                row.innerHTML =
+                    '<div class="msg-avatar">' + avatar + '</div>' +
+                    '<div class="msg-bubble">' + escapeHtml(text) + '</div>';
+                messages.appendChild(row);
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function handleSend() {
+                var text = input.value.trim();
+                if (!text) return;
+                appendMessage(text, 'user');
+                input.value = '';
+                setTimeout(function () {
+                    appendMessage(getReply(text), 'bot');
+                }, 400);
+            }
+
+            function getReply(msg) {
+                var m = msg.toLowerCase();
+
+                if (m.match(/(request|submit|order|new test)/))
+                    return "Doctors submit test requests from the Doctor dashboard:\n\n1. Log in as a Doctor\n2. Click 'Create Test Request'\n3. Choose the patient, urgency, and test types\n4. Record the sample barcodes\n5. Submit\n\nThe patient is notified by email.";
+
+                if (m.match(/(hour|open|close|time|weekend|saturday|sunday)/))
+                    return "Lab hours:\n\n• Monday – Friday: 07:00 – 18:00\n• Saturday: 08:00 – 13:00\n• Sunday & Public Holidays: Closed\n\nThe online portal is available 24/7.";
+
+                if (m.match(/(location|where|address|find you|directions|map)/))
+                    return "We're located at:\n\nNelson Mandela Bay Haematology Diagnostic Laboratories\nGovan Mbeki Avenue, Port Elizabeth, Eastern Cape\n\nSee the map on our homepage for directions.";
+
+                if (m.match(/(how long|turnaround|take|duration|wait)/))
+                    return "Turnaround times depend on the test type:\n\n• HIV Rapid — 30 minutes\n• Total Cholesterol — 45 minutes\n• Full Blood Count — 60 minutes\n• COVID-19 PCR — 90 minutes\n• PT/INR — 90 minutes\n• CD4 Count — 120 minutes\n\nUrgent and STAT requests are prioritised.";
+
+                if (m.match(/(test type|what tests|which tests|test list|catalogue|catalog)/))
+                    return "We offer a range of haematology tests, including:\n\n• Full Blood Count (FBC)\n• CD4 Count\n• HIV Rapid\n• COVID-19 PCR\n• PT/INR\n• Total Cholesterol\n\nYour doctor will select the appropriate tests.";
+
+                if (m.match(/(result|check result|view result|see result)/))
+                    return "To view your results:\n\n1. Log in to the patient portal\n2. Go to 'My Requests'\n3. Requests marked 'Released' have downloadable results\n\nResults are only visible after your doctor releases them.";
+
+                if (m.match(/(password|forgot|login|sign in|reset)/))
+                    return "Password help:\n\n• Click 'Login' → 'Forgot password?' to reset by email\n• Passwords must be 8+ characters with one uppercase, one number, and one special character\n• If you're still stuck, contact the laboratory admin.";
+
+                if (m.match(/(barcode|sample|tube|specimen)/))
+                    return "Every sample has a barcode tied to your test request.\n\nDoctors record the barcode when they collect the sample, and the lab verifies it on arrival — so nothing gets mixed up.";
+
+                if (m.match(/(hello|hi|hey|good morning|good afternoon)/))
+                    return "Hello! How can I help you today?\n\nYou can ask me about submitting test requests, lab hours, test types, results, or account help.";
+
+                if (m.match(/(thank|thanks|cheers)/))
+                    return "You're welcome! Anything else I can help with?";
+
+                return "I can help with:\n\n• Submitting a test request\n• Lab hours & location\n• Test types offered\n• Result turnaround times\n• Account & password help\n\nTry asking about one of these topics.";
+            }
+        })();
+    </script>
+}

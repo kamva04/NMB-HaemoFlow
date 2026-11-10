@@ -1,0 +1,212 @@
+@* ── Views/Patient/Register.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.PatientRegisterViewModel
+@{
+    ViewData["Title"] = "Patient Registration";
+    Layout = "_Layout";
+}
+
+<div class="registration-background d-flex align-items-center justify-content-center"
+     style="background-color:#0d3b66;background-image:linear-gradient(135deg,rgba(13,59,102,0.80) 0%,rgba(26,143,227,0.72) 100%),url('@Url.Content("~/images/login-medical-team.jpg")');background-size:cover;background-position:center;background-repeat:no-repeat;">
+    <div class="card shadow-lg registration-card">
+        <div class="card-body p-4 p-md-4">
+            <div class="text-center mb-4">
+                <div class="registration-logo"><partial name="_AuthLogo" /></div>
+                <h4 class="fw-bold mt-2 mb-0">Patient Registration</h4>
+                <p class="text-muted small">NMB-HLabSys – Nelson Mandela Bay Haematology Laboratory</p>
+            </div>
+
+            <form asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="registration-validation alert alert-danger small py-2"></div>
+
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label fw-semibold"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Surname" class="form-label fw-semibold"></label>
+                        <input asp-for="Surname" class="form-control" />
+                        <span asp-validation-for="Surname" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="SAIDNumber" class="form-label fw-semibold"></label>
+                        <input asp-for="SAIDNumber" class="form-control" maxlength="13" />
+                        <span asp-validation-for="SAIDNumber" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DateOfBirth" class="form-label fw-semibold"></label>
+                        <input asp-for="DateOfBirth" type="date" class="form-control" readonly />
+                        <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label fw-semibold"></label>
+                        <select asp-for="Gender" class="form-select">
+                            <option value="">Select gender</option>
+                            <option>Female</option>
+                            <option>Male</option>
+                            <option>Other</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="CellNumber" class="form-label fw-semibold"></label>
+                        <input asp-for="CellNumber" class="form-control" type="tel" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" />
+                        <span asp-validation-for="CellNumber" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold"></label>
+                        <input asp-for="Email" type="email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Street" class="form-label fw-semibold"></label>
+                        <input asp-for="Street" class="form-control" placeholder="Street address" />
+                        <span asp-validation-for="Street" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Street2" class="form-label fw-semibold"></label>
+                        <input asp-for="Street2" class="form-control" placeholder="Apartment, building, or second street line " />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Province" class="form-label fw-semibold"></label>
+                        <select asp-for="Province" class="form-select" id="Province">
+                            <option value="">Select province first</option>
+                            <option>Eastern Cape</option>
+                            <option>Free State</option>
+                            <option>Gauteng</option>
+                            <option>KwaZulu-Natal</option>
+                            <option>Limpopo</option>
+                            <option>Mpumalanga</option>
+                            <option>North West</option>
+                            <option>Northern Cape</option>
+                            <option>Western Cape</option>
+                        </select>
+                        <span asp-validation-for="Province" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Town" class="form-label fw-semibold"></label>
+                        <select asp-for="Town" class="form-select" id="Town" data-selected-town="@Model.Town" disabled>
+                            <option value="">Select a province first</option>
+                        </select>
+                        <span asp-validation-for="Town" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="Suburb" class="form-label fw-semibold"></label>
+                        <input asp-for="Suburb" class="form-control" placeholder="Enter suburb" />
+                        <span asp-validation-for="Suburb" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="PostalCode" class="form-label fw-semibold"></label>
+                        <input asp-for="PostalCode" class="form-control" maxlength="4" inputmode="numeric" />
+                        <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="Password" class="form-control" id="pwField" />
+                            <button type="button" class="btn btn-outline-secondary toggle-pw" data-target="pwField">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                        <div class="form-text">Min 8 chars · 1 uppercase · 1 number · 1 special</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                        <div class="input-group">
+                            <input asp-for="ConfirmPassword" class="form-control" id="cpField" />
+                            <button type="button" class="btn btn-outline-secondary toggle-pw" data-target="cpField">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-check me-2"></i>Register
+                    </button>
+                </div>
+                <p class="text-center small mt-3">
+                    Already registered? <a asp-controller="Account" asp-action="Login">Login here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="~/js/patient-address.js"></script>
+<script>
+    document.querySelectorAll('.toggle-pw').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const f = document.getElementById(this.dataset.target);
+            const icon = this.querySelector('i');
+            f.type = f.type === 'password' ? 'text' : 'password';
+            icon.className = f.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+        });
+    });
+</script>
+<script src="~/js/patient-id.js"></script>
+<partial name="_ValidationScriptsPartial" />
+}
+
+
+<style>
+    .registration-card {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    .registration-logo img {
+        width: 78px;
+        height: 78px;
+    }
+
+    .registration-card .form-label {
+        margin-bottom: .25rem;
+    }
+
+    .registration-card .form-control,
+    .registration-card .form-select {
+        min-height: 38px;
+    }
+
+    @@media (max-width: 575.98px) {
+        .registration-card {
+            max-width: 100%;
+        }
+
+        .registration-card .card-body {
+            padding: 1.25rem !important;
+        }
+    }
+</style>
+@section Styles {
+    <style>
+        #mainContent {
+            display: flex;
+            min-width: 0;
+            padding: 0;
+        }
+
+        .registration-background {
+            flex: 1;
+            min-width: 0;
+            padding: 2rem 1rem;
+        }
+
+        .registration-validation.validation-summary-valid {
+            display: none;
+        }
+
+        .registration-validation.validation-summary-errors ul {
+            margin-bottom: 0;
+            padding-left: 1rem;
+        }
+    </style>
+}

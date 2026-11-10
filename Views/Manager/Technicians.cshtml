@@ -1,0 +1,40 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Technician>
+@{ ViewData["Title"] = "Lab Technicians"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-person-gear text-primary me-2"></i>Lab Technicians</h4>
+    <a asp-action="CreateTechnician" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Add Technician</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr><th>Name</th><th>Employee #</th><th>Email</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@t.Name @t.Surname</td>
+                        <td class="font-monospace small">@t.EmployeeNumber</td>
+                        <td class="text-muted small">@t.User?.Email</td><td><span class="badge @(t.IsDeleted ? "bg-secondary" : "bg-success")">@(t.IsDeleted ? "Archived" : "Active")</span></td>
+                        <td class="text-end">
+                            <a asp-action="AssignTestTypes" asp-route-id="@t.TechnicianId" class="btn btn-sm btn-outline-primary me-2">View / Assign Test Types</a>
+                            <a asp-action="EditTechnician" asp-route-id="@t.TechnicianId"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="@(t.IsDeleted ? "RestoreTechnician" : "ArchiveTechnician")" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@t.TechnicianId" />
+                                <button type="submit" class="btn btn-sm @(t.IsDeleted ? "btn-outline-success" : "btn-outline-danger")" data-confirm="@(t.IsDeleted ? "Restore this technician and allow sign-in?" : "Archive this technician? Sign-in will be disabled; history and assignments will be kept.")" onclick="return confirm(this.dataset.confirm)">@(t.IsDeleted ? "Restore" : "Archive")</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any()) { <tr><td colspan="5" class="text-center text-muted py-4">No technicians registered.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>

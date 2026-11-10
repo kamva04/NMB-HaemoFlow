@@ -1,0 +1,293 @@
+@model NMB_HLabSys.Models.ViewModels.ManagerDashboardViewModel
+@{
+    ViewData["Title"] = "Manager Dashboard";
+}
+
+<section class="manager-hero mb-4">
+    <div>
+        <p class="eyebrow mb-2"><i class="bi bi-shield-check me-1"></i>Laboratory operations</p>
+        <h1 class="h3 fw-bold mb-2">Good day, @Model.ManagerName.</h1>
+        <p class="mb-0 opacity-75">Your live overview of laboratory catalogue, stock and staff operations.</p>
+    </div>
+    <div class="hero-actions">
+        <a asp-action="CreateOrder" class="btn btn-light"><i class="bi bi-cart-plus me-1"></i>Create Stock Order</a>
+        <a asp-action="Profile" class="btn btn-hero-outline"><i class="bi bi-person me-1"></i>My Profile</a>
+    </div>
+</section>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ═══════════════════ Top metric strip (unchanged 4 cards) ═══════════════════ *@
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="TestTypes" class="metric-card text-decoration-none">
+            <span class="metric-icon icon-blue"><i class="bi bi-clipboard2-pulse"></i></span>
+            <span>
+                <span class="metric-value">@Model.ActiveTestTypes</span>
+                <span class="metric-label">Active test types</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="Consumables" class="metric-card text-decoration-none">
+            <span class="metric-icon @(Model.StockAttentionCount > 0 ? "icon-red" : "icon-green")">
+                <i class="bi bi-box-seam"></i>
+            </span>
+            <span>
+                <span class="metric-value">@Model.StockAttentionCount</span>
+                <span class="metric-label">Stock items need attention</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="Orders" class="metric-card text-decoration-none">
+            <span class="metric-icon icon-amber"><i class="bi bi-cart3"></i></span>
+            <span>
+                <span class="metric-value">@Model.PendingOrderCount</span>
+                <span class="metric-label">Pending stock orders</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="metric-card staff-metric">
+            <span class="metric-icon icon-blue"><i class="bi bi-people" aria-hidden="true"></i></span>
+            <div>
+                <span class="metric-value">@Model.StaffCount</span>
+                <span class="metric-label">Doctors and technicians</span>
+                <div class="staff-links">
+                    <a asp-action="Doctors">Doctors</a>
+                    <a asp-action="Technicians">Technicians</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ═══════════════════ NEW: Alerts row (supply requests + stock problems) ═══════════════════ *@
+@if (Model.PendingSupplyRequestCount > 0 || Model.OpenStockProblemCount > 0)
+{
+    <div class="row g-3 mb-4">
+        @if (Model.PendingSupplyRequestCount > 0)
+        {
+            <div class="col-md-6">
+                <a asp-action="SupplyRequests" asp-route-status="Pending"
+                   class="metric-card alert-metric text-decoration-none">
+                    <span class="metric-icon icon-amber">
+                        <i class="bi bi-cart-plus"></i>
+                    </span>
+                    <span>
+                        <span class="metric-value">@Model.PendingSupplyRequestCount</span>
+                        <span class="metric-label">Pending supply requests from technicians</span>
+                    </span>
+                    <i class="bi bi-arrow-up-right metric-arrow"></i>
+                </a>
+            </div>
+        }
+        @if (Model.OpenStockProblemCount > 0)
+        {
+            <div class="col-md-6">
+                <a asp-action="StockProblems" asp-route-status="Open"
+                   class="metric-card alert-metric text-decoration-none">
+                    <span class="metric-icon icon-red">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </span>
+                    <span>
+                        <span class="metric-value">@Model.OpenStockProblemCount</span>
+                        <span class="metric-label">Open stock problems awaiting investigation</span>
+                    </span>
+                    <i class="bi bi-arrow-up-right metric-arrow"></i>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@* ═══════════════════ Main grid: stock attention + quick actions ═══════════════════ *@
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card dashboard-card h-100">
+            <div class="card-header dashboard-card-header">
+                <div>
+                    <h5 class="mb-1">
+                        <i class="bi @(Model.LowStockItems.Any() ? "bi-exclamation-triangle-fill text-danger" : "bi-check-circle-fill text-success") me-2" aria-hidden="true"></i>
+                        @(Model.LowStockItems.Any() ? "Stock attention" : "Stock overview")
+                    </h5>
+                    <p class="mb-0 small text-muted">Consumables at or within 10% of their reorder level.</p>
+                </div>
+                <a asp-action="Consumables" class="btn btn-sm btn-outline-primary">View inventory</a>
+            </div>
+            @if (Model.LowStockItems.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Consumable</th>
+                                <th>Supplier</th>
+                                <th class="text-center">On hand</th>
+                                <th class="text-center">Reorder level</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.LowStockItems.Take(6))
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.ConsumableName</td>
+                                    <td class="text-muted small">@item.SupplierName</td>
+                                    <td class="text-center fw-bold @(item.IsCritical ? "text-danger" : "text-warning")">@item.QuantityOnHand</td>
+                                    <td class="text-center text-muted">@item.ReorderLevel</td>
+                                    <td class="text-end">
+                                        <span class="badge @(item.IsCritical ? "text-bg-danger" : "stock-low")">
+                                            @(item.IsCritical ? "Critical" : "Near reorder")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (Model.LowStockItems.Count > 6)
+                {
+                    <div class="card-footer bg-white text-center">
+                        <a asp-action="Consumables" class="small fw-semibold text-decoration-none">
+                            View all @Model.LowStockItems.Count stock alerts <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <span class="empty-icon"><i class="bi bi-check2-circle"></i></span>
+                    <h6>Stock levels look healthy</h6>
+                    <p class="text-muted small mb-0">No consumables are currently close to their reorder level.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card dashboard-card mb-4">
+            <div class="card-header dashboard-card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge-fill text-primary me-2"></i>Quick actions</h5>
+            </div>
+            <div class="list-group list-group-flush quick-actions">
+                <a asp-action="SupplyRequests" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-cart-check"></i></span>
+                    Review supply requests
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+                <a asp-action="StockProblems" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-exclamation-triangle"></i></span>
+                    View stock problems
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+                <a asp-action="CreateTestType" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-clipboard2-plus"></i></span>
+                    Add test type
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+                <a asp-action="CreateTechnician" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-person-plus"></i></span>
+                    Add technician
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+                <a asp-action="CreateSupplier" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-truck"></i></span>
+                    Add supplier
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+                <a asp-action="Reports" class="list-group-item list-group-item-action">
+                    <span class="action-icon"><i class="bi bi-bar-chart-line"></i></span>
+                    View reports
+                    <i class="bi bi-chevron-right ms-auto"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card dashboard-card">
+            <div class="card-body p-4">
+                <p class="eyebrow text-primary mb-2">Laboratory catalogue</p>
+                <div class="d-flex gap-4">
+                    <div>
+                        <div class="small text-muted">Categories</div>
+                        <div class="fs-3 fw-bold">@Model.CategoryCount</div>
+                    </div>
+                    <div class="vr"></div>
+                    <div>
+                        <div class="small text-muted">Suppliers</div>
+                        <div class="fs-3 fw-bold">@Model.SupplierCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* ─── Original styles (unchanged) ─── */
+        .manager-hero{background:linear-gradient(125deg,#073b82,#0d6efd);color:#fff;border-radius:1rem;padding:1.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;box-shadow:0 10px 26px rgba(7,59,130,.2)}
+        .eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;font-weight:700}
+        .hero-actions{display:flex;gap:.6rem;flex-wrap:wrap}
+        .btn-hero-outline{color:#fff;border-color:rgba(255,255,255,.7)}
+        .btn-hero-outline:hover{color:#073b82;background:#fff}
+        .metric-card{background:#fff;color:#212529;border-radius:.8rem;min-height:112px;padding:1.1rem;display:flex;align-items:center;gap:.85rem;box-shadow:0 2px 10px rgba(15,42,77,.08);transition:.18s}
+        .metric-card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(15,42,77,.15);color:#212529}
+        .metric-icon{width:46px;height:46px;border-radius:.7rem;display:grid;place-items:center;font-size:1.35rem}
+        .icon-blue{background:#e7f0ff;color:#0d6efd}
+        .icon-red{background:#fee9eb;color:#dc3545}
+        .icon-green{background:#e6f6ec;color:#198754}
+        .icon-amber{background:#fff3dc;color:#b77900}
+        .icon-purple{background:#f0eaff;color:#6f42c1}
+        .metric-value{display:block;font-size:1.5rem;font-weight:700;line-height:1.1}
+        .metric-label{display:block;font-size:.78rem;color:#6c757d;margin-top:.18rem}
+        .metric-arrow{margin-left:auto;color:#9ba8b5}
+        .dashboard-card{border-radius:.8rem;overflow:hidden}
+        .dashboard-card-header{background:#fff;padding:1rem 1.2rem;border-bottom:1px solid #edf0f3;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+        .dashboard-table th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:#778390;background:#f8fafc;padding:.75rem 1.2rem;border-bottom:0}
+        .dashboard-table td{padding:.85rem 1.2rem;border-color:#edf0f3}
+        .stock-low{background:#fff3cd;color:#7a5700}
+        .empty-state{text-align:center;padding:3.2rem 1rem}
+        .empty-icon{display:inline-grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#e6f6ec;color:#198754;font-size:1.7rem;margin-bottom:.8rem}
+        .quick-actions .list-group-item{border-color:#edf0f3;display:flex;align-items:center;gap:.7rem;padding:.85rem 1.1rem;font-weight:500}
+        .quick-actions .list-group-item:hover{background:#f5f9ff;color:#073b82}
+        .action-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:.45rem;background:#e7f0ff;color:#0d6efd}
+        .quick-actions .bi-chevron-right{font-size:.72rem;color:#aab3bd}
+        @@media(max-width:767.98px){.manager-hero{padding:1.4rem;align-items:flex-start;flex-direction:column}.dashboard-card-header{align-items:flex-start;flex-direction:column}.hero-actions{width:100%}.hero-actions .btn{flex:1}}
+
+        /* ─── Existing refinements (unchanged) ─── */
+        .manager-hero { background:linear-gradient(120deg,#0d3b66,#15588a); box-shadow:0 6px 20px rgba(13,59,102,.12); }
+        .metric-card { border:1px solid #dce7f0; box-shadow:0 4px 16px rgba(13,59,102,.04); height:100%; color:#193b56; }
+        .metric-icon { flex-shrink:0; }
+        .metric-icon.icon-blue,.metric-icon.icon-amber,.metric-icon.icon-purple,.action-icon { background:#e7f2fb; color:#0d3b66; }
+        .metric-label { color:#526b80; }
+        .dashboard-card { border:1px solid #dce7f0; box-shadow:0 4px 18px rgba(13,59,102,.04); }
+        .dashboard-card-header h5 { color:#0d3b66; font-size:1.05rem; font-weight:700; }
+        .dashboard-card .text-primary { color:#0d3b66 !important; }
+        .dashboard-card .btn-outline-primary { color:#0d3b66; border-color:#99bdd9; }
+        .dashboard-card .btn-outline-primary:hover { background:#e7f2fb; }
+        .dashboard-table th { background:#edf5fc; color:#526b80; }
+        .quick-actions .list-group-item { color:#193b56; }
+        .quick-actions .list-group-item:hover { background:#edf5fc; color:#0d3b66; }
+        .staff-links { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+        .staff-links a { color:#12618d; font-size:.78rem; font-weight:600; text-underline-offset:3px; }
+        .staff-metric:hover { transform:none; }
+
+        /* ─── NEW: alert-metric accents (blend into existing palette) ─── */
+        .alert-metric { border-left:4px solid #0d3b66; }
+        .alert-metric .metric-value { color:#0d3b66; }
+        .alert-metric.alert-metric-danger { border-left-color:#dc3545; }
+        .alert-metric.alert-metric-danger .metric-value { color:#dc3545; }
+    </style>
+}

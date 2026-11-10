@@ -1,0 +1,88 @@
+﻿@model NMB_HLabSys.Models.ViewModels.MySupplyRequestsViewModel
+@{
+    ViewData["Title"] = "My Supply Requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-hero">
+    <div class="page-hero-body d-flex justify-content-between align-items-end flex-wrap gap-2">
+        <div>
+            <h1 class="page-title">My Supply Requests</h1>
+            <p class="page-subtitle">All stock requests you have sent to the Lab Manager.</p>
+        </div>
+        <a asp-action="RequestConsumable" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Request
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="metric-card"><div class="metric-label">Pending</div><div class="metric-value text-warning">@Model.PendingCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="metric-card"><div class="metric-label">Approved</div><div class="metric-value text-primary">@Model.ApprovedCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="metric-card"><div class="metric-label">Rejected</div><div class="metric-value text-danger">@Model.RejectedCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="metric-card"><div class="metric-label">Fulfilled</div><div class="metric-value text-success">@Model.FulfilledCount</div></div></div>
+</div>
+
+<div class="card soft-card">
+    <div class="card-body p-0">
+        @if (!Model.Requests.Any())
+        {
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-inbox display-5 d-block mb-3"></i>
+                You have not submitted any supply requests yet.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Request #</th>
+                            <th>Consumable</th>
+                            <th class="text-center">Qty</th>
+                            <th>Urgency</th>
+                            <th>Status</th>
+                            <th>Requested</th>
+                            <th>Manager Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Requests)
+                        {
+                            var badge = r.Status switch
+                            {
+                                "Approved"          => "bg-primary-subtle text-primary-emphasis",
+                                "PartiallyApproved" => "bg-info-subtle text-info-emphasis",
+                                "Rejected"          => "bg-danger-subtle text-danger-emphasis",
+                                "Fulfilled"         => "bg-success-subtle text-success-emphasis",
+                                "PartiallyFulfilled"=> "bg-success-subtle text-success-emphasis",
+                                _                   => "bg-warning-subtle text-warning-emphasis"
+                            };
+                            <tr>
+                                <td class="ps-4 fw-semibold">@r.RequestNumber</td>
+                                <td>@r.Consumable?.ConsumableName</td>
+                                <td class="text-center">
+                                    @r.QuantityRequested
+                                    @if (r.QuantityApproved.HasValue || r.QuantityFulfilled.HasValue)
+                                    {
+                                        <span class="text-muted small d-block">
+                                            Approved: @(r.QuantityApproved?.ToString() ?? "—") ·
+                                            Fulfilled: @(r.QuantityFulfilled?.ToString() ?? "—")
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@r.Urgency</span>
+                                </td>
+                                <td><span class="badge @badge">@r.Status</span></td>
+                                <td class="small text-muted">@r.RequestedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                <td class="small">@(r.ManagerDecisionNote ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

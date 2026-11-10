@@ -1,0 +1,119 @@
+﻿@model NMB_HLabSys.Models.ViewModels.TestRequestsListViewModel
+@{
+    ViewData["Title"] = "My Test Requests";
+    string UrgencyBadge(string u) => u switch
+    {
+        "Stat"   => "bg-danger",
+        "Urgent" => "bg-warning text-dark",
+        _        => "bg-secondary"
+    };
+    string StatusBadge(string s) => s switch
+    {
+        "Submitted"    => "bg-secondary",
+        "InProgress"   => "bg-primary",
+        "Completed"    => "bg-info text-dark",
+        "Verified"     => "bg-success",
+        "ToBeReviewed" => "bg-warning text-dark",
+        "Cancelled"    => "bg-dark",
+        _              => "bg-light text-dark"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-clipboard2-pulse text-primary me-2"></i>My Test Requests</h3>
+        <div class="text-muted">Every request/test pair where you are the assigned technician.</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+@* Filters *@
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold"><i class="bi bi-funnel me-2"></i>Filters</div>
+    <div class="card-body">
+        <form asp-action="TestRequests" method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All statuses</option>
+                    <option value="Submitted"    selected='@(Model.StatusFilter == "Submitted" ? "selected" : null)'>Submitted</option>
+                    <option value="InProgress"   selected='@(Model.StatusFilter == "InProgress" ? "selected" : null)'>In Progress</option>
+                    <option value="Completed"    selected='@(Model.StatusFilter == "Completed" ? "selected" : null)'>Completed</option>
+                    <option value="Verified"     selected='@(Model.StatusFilter == "Verified" ? "selected" : null)'>Verified</option>
+                    <option value="ToBeReviewed" selected='@(Model.StatusFilter == "ToBeReviewed" ? "selected" : null)'>To Be Reviewed</option>
+                    <option value="Cancelled"    selected='@(Model.StatusFilter == "Cancelled" ? "selected" : null)'>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Urgency</label>
+                <select name="urgency" class="form-select">
+                    <option value="">All</option>
+                    <option value="Routine" selected='@(Model.UrgencyFilter == "Routine" ? "selected" : null)'>Routine</option>
+                    <option value="Urgent"  selected='@(Model.UrgencyFilter == "Urgent" ? "selected" : null)'>Urgent</option>
+                    <option value="Stat"    selected='@(Model.UrgencyFilter == "Stat" ? "selected" : null)'>STAT</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Request number</label>
+                <input name="requestNumber" value="@Model.RequestNumberFilter" class="form-control" placeholder="Search request…" />
+            </div>
+            <div class="col-md-4 d-grid d-md-flex gap-2">
+                <button class="btn btn-primary flex-fill"><i class="bi bi-search me-1"></i>Filter</button>
+                <a asp-action="TestRequests" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Table *@
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-list-check me-2"></i>My test requests</span>
+        <span class="badge bg-secondary">@Model.Rows.Count</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Request #</th>
+                    <th>Patient</th>
+                    <th>Test</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Started</th>
+                    <th>Completed</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td class="font-monospace fw-semibold">@r.RequestNumber</td>
+                    <td>@r.Patient</td>
+                    <td>
+                        <div class="fw-semibold">@r.TestName</div>
+                        <div class="text-muted small">@r.Category</div>
+                    </td>
+                    <td><span class="badge @UrgencyBadge(r.Urgency)">@r.Urgency</span></td>
+                    <td><span class="badge @StatusBadge(r.Status)">@r.Status</span></td>
+                    <td class="text-muted small">@r.RequestDate.ToString("dd MMM yy HH:mm")</td>
+                    <td class="text-muted small">@(r.StartedAt?.ToString("dd MMM yy HH:mm") ?? "—")</td>
+                    <td class="text-muted small">@(r.CompletedAt?.ToString("dd MMM yy HH:mm") ?? "—")</td>
+                    <td class="text-end">
+                        <a asp-action="TestDetails" asp-route-requestTestId="@r.RequestTestId"
+                           class="btn btn-sm btn-outline-secondary">Details</a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Rows.Any())
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No test requests match your filters.</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

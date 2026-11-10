@@ -1,0 +1,111 @@
+﻿@model NMB_HLabSys.Models.ViewModels.EditSampleViewModel
+@{
+    ViewData["Title"] = "Edit Sample";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-pencil-square text-warning me-2"></i>Edit Sample Record</h3>
+        <div class="text-muted">Correct a typo in the barcode or request number. A note is required.</div>
+    </div>
+    <a asp-action="ReceiveSamples" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-clipboard-data me-2"></i>Context</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5 text-muted">Sample ID</dt>
+                    <dd class="col-7 font-monospace">#@Model.SampleId</dd>
+
+                    <dt class="col-5 text-muted">Patient</dt>
+                    <dd class="col-7">@Model.PatientName</dd>
+
+                    <dt class="col-5 text-muted">Request #</dt>
+                    <dd class="col-7 font-monospace fw-semibold">@Model.RequestNumber</dd>
+
+                    <dt class="col-5 text-muted">Current barcode</dt>
+                    <dd class="col-7 font-monospace">@Model.CurrentBarcode</dd>
+                </dl>
+
+                @if (!string.IsNullOrWhiteSpace(Model.LastEditNote))
+                {
+                    <hr />
+                    <div class="alert alert-info small mb-0">
+                        <div class="fw-semibold mb-1"><i class="bi bi-clock-history me-1"></i>Previously edited</div>
+                        <div>By <strong>@Model.LastEditedBy</strong> on @(Model.LastEditedAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</div>
+                        <div class="mt-1 fst-italic">"@Model.LastEditNote"</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-pencil me-2"></i>Edit</div>
+            <div class="card-body">
+                <form asp-action="EditSample" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="SampleId" />
+                    <input type="hidden" asp-for="RequestId" />
+                    <input type="hidden" asp-for="RequestNumber" />
+                    <input type="hidden" asp-for="PatientName" />
+                    <input type="hidden" asp-for="CurrentBarcode" />
+                    <input type="hidden" asp-for="CurrentRequestNumber" />
+                    <input type="hidden" asp-for="LastEditedBy" />
+                    <input type="hidden" asp-for="LastEditedAt" />
+                    <input type="hidden" asp-for="LastEditNote" />
+
+                    <div class="mb-3">
+                        <label asp-for="NewBarcode" class="form-label">
+                            Barcode <span class="text-muted small">(was: @Model.CurrentBarcode)</span>
+                        </label>
+                        <input asp-for="NewBarcode" class="form-control font-monospace" />
+                        <span asp-validation-for="NewBarcode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NewRequestNumber" class="form-label">
+                            Request number <span class="text-muted small">(was: @Model.CurrentRequestNumber)</span>
+                        </label>
+                        <input asp-for="NewRequestNumber" class="form-control font-monospace" />
+                        <span asp-validation-for="NewRequestNumber" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="EditNote" class="form-label">
+                            Note explaining the change <span class="text-danger">*</span>
+                        </label>
+                        <textarea asp-for="EditNote" class="form-control" rows="4"
+                                  placeholder="e.g. Doctor typed 'A1B2C3' but the tube reads 'A1B2C4' — corrected to match physical sample."></textarea>
+                        <span asp-validation-for="EditNote" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save me-1"></i>Save changes
+                        </button>
+                        <a asp-action="ReceiveSamples" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

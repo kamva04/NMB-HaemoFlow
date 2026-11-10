@@ -1,0 +1,303 @@
+﻿@model NMB_HLabSys.Models.ViewModels.ConsumableManagementViewModel
+@{
+    ViewData["Title"] = "Consumable Management";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-box-seam text-warning me-2"></i>Consumable Management</h3>
+        <div class="text-muted">Lab-wide stock. Request, adjust, or remove consumables. All actions notify the lab manager.</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* SUMMARY CARDS *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100 border-primary">
+            <div class="card-body">
+                <div class="text-muted small">Total active</div>
+                <div class="display-6 fw-bold text-primary">@Model.TotalCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100 border-warning">
+            <div class="card-body">
+                <div class="text-muted small">Below reorder level</div>
+                <div class="display-6 fw-bold text-warning">@Model.LowStockCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100 border-danger">
+            <div class="card-body">
+                <div class="text-muted small">Out of stock</div>
+                <div class="display-6 fw-bold text-danger">@Model.OutOfStockCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card shadow-sm h-100 border-secondary">
+            <div class="card-body">
+                <div class="text-muted small">Removed from use</div>
+                <div class="display-6 fw-bold text-secondary">@Model.RemovedCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* FILTERS *@
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold"><i class="bi bi-funnel me-2"></i>Filters</div>
+    <div class="card-body">
+        <form asp-action="Consumables" method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label">Search</label>
+                <input name="search" value="@Model.SearchTerm" class="form-control" placeholder="Search by name or supplier…" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="All" selected='@(string.IsNullOrEmpty(Model.StatusFilter) || Model.StatusFilter == "All" ? "selected" : null)'>All statuses</option>
+                    <option value="OK" selected='@(Model.StatusFilter == "OK" ? "selected" : null)'>OK</option>
+                    <option value="Low" selected='@(Model.StatusFilter == "Low" ? "selected" : null)'>Low</option>
+                    <option value="Out" selected='@(Model.StatusFilter == "Out" ? "selected" : null)'>Out of stock</option>
+                    <option value="Removed" selected='@(Model.StatusFilter == "Removed" ? "selected" : null)'>Removed</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-primary"><i class="bi bi-search me-1"></i>Apply</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* TABLE *@
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-list-check me-2"></i>Consumables</span>
+        <span class="badge bg-secondary">@Model.Consumables.Count</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Consumable</th>
+                    <th>Supplier</th>
+                    <th class="text-center">On hand</th>
+                    <th class="text-center">Reorder level</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Consumables)
+                {
+                    var statusBadge = c.Status switch
+                    {
+                        "OK" => "bg-success",
+                        "Low" => "bg-warning text-dark",
+                        "Out" => "bg-danger",
+                        "Removed" => "bg-secondary",
+                        _ => "bg-light text-dark"
+                    };
+                    <tr class="@(c.Status == "Out" ? "table-danger" : c.Status == "Low" ? "table-warning" : c.Status == "Removed" ? "table-secondary" : "")">
+                        <td>
+                            <div class="fw-semibold">@c.ConsumableName</div>
+                            @if (!c.IsActive && !string.IsNullOrWhiteSpace(c.RemovalReason))
+                            {
+                                <div class="small text-muted fst-italic">
+                                    Removed @(c.RemovedAt?.ToString("dd MMM yyyy") ?? "—"): @c.RemovalReason
+                                </div>
+                            }
+                        </td>
+                        <td class="text-muted small">@(c.SupplierName ?? "—")</td>
+                        <td class="text-center fw-bold">@c.QuantityOnHand</td>
+                        <td class="text-center text-muted">@c.ReorderLevel</td>
+                        <td class="text-center">
+                            <span class="badge @statusBadge">@c.Status</span>
+                        </td>
+                        <td class="text-end">
+                            @if (c.IsActive)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                        data-bs-toggle="modal" data-bs-target="#requestStockModal"
+                                        data-consumable-id="@c.ConsumableId"
+                                        data-consumable-name="@c.ConsumableName">
+                                    <i class="bi bi-cart-plus me-1"></i>Request
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal" data-bs-target="#adjustStockModal"
+                                        data-consumable-id="@c.ConsumableId"
+                                        data-consumable-name="@c.ConsumableName"
+                                        data-consumable-onhand="@c.QuantityOnHand">
+                                    <i class="bi bi-sliders me-1"></i>Adjust
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#removeConsumableModal"
+                                        data-consumable-id="@c.ConsumableId"
+                                        data-consumable-name="@c.ConsumableName">
+                                    <i class="bi bi-trash me-1"></i>Remove
+                                </button>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">No actions available</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Consumables.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">No consumables match your filters.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* ============================================================
+   MODALS
+   ============================================================ *@
+
+@* Request stock modal (reused from ConfirmStart pattern) *@
+<div class="modal fade" id="requestStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RequestStock" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-cart-plus me-2"></i>Request Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="consumableId" id="rs-consumableId" />
+                    <p>Request additional stock for <strong id="rs-consumableName">this consumable</strong>.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity needed</label>
+                        <input type="number" min="1" value="10" class="form-control" name="quantityNeeded" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note for lab manager (optional)</label>
+                        <textarea class="form-control" name="note" rows="3" placeholder="e.g. About to run out"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-send me-1"></i>Send Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Adjust stock modal *@
+<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AdjustConsumableStock" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-sliders me-2"></i>Adjust Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="consumableId" id="adj-consumableId" />
+                    <p>
+                        Adjusting <strong id="adj-consumableName">this consumable</strong>.
+                        Current on hand: <strong id="adj-currentQty">0</strong>.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Adjustment (positive to add, negative to subtract)</label>
+                        <input type="number" class="form-control" name="adjustment" value="1" required />
+                        <div class="form-text">Example: 5 to add 5 units, -3 to subtract 3 units.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Note for lab manager (optional)</label>
+                        <textarea class="form-control" name="note" rows="3" placeholder="e.g. Received 5 extra from storeroom"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@* Remove consumable modal *@
+<div class="modal fade" id="removeConsumableModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RemoveConsumable" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Remove Consumable</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="consumableId" id="rm-consumableId" />
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        This removes <strong id="rm-consumableName">this consumable</strong> from active use.
+                        The lab manager will be alerted.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reason <span class="text-danger">*</span></label>
+                        <textarea name="reason" class="form-control" rows="3" required
+                                  placeholder="e.g. Out of season, no longer used for COVID tests"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Remove</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Request stock
+        document.getElementById('requestStockModal').addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            document.getElementById('rs-consumableId').value = b.getAttribute('data-consumable-id');
+            document.getElementById('rs-consumableName').textContent = b.getAttribute('data-consumable-name');
+        });
+
+        // Adjust stock
+        document.getElementById('adjustStockModal').addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            document.getElementById('adj-consumableId').value = b.getAttribute('data-consumable-id');
+            document.getElementById('adj-consumableName').textContent = b.getAttribute('data-consumable-name');
+            document.getElementById('adj-currentQty').textContent = b.getAttribute('data-consumable-onhand');
+        });
+
+        // Remove
+        document.getElementById('removeConsumableModal').addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            document.getElementById('rm-consumableId').value = b.getAttribute('data-consumable-id');
+            document.getElementById('rm-consumableName').textContent = b.getAttribute('data-consumable-name');
+        });
+    </script>
+}

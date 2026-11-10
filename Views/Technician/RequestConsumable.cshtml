@@ -1,0 +1,88 @@
+﻿@model NMB_HLabSys.Models.ViewModels.RequestConsumableViewModel
+@{
+    ViewData["Title"] = "Request Consumables";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-hero">
+    <div class="page-hero-body">
+        <h1 class="page-title">Request Consumables</h1>
+        <p class="page-subtitle">Send a stock request to the Lab Manager. Approval and fulfilment are handled centrally.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card soft-card">
+            <div class="card-body p-4">
+                <form asp-action="RequestConsumable" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="ConsumableId" class="form-label">Consumable</label>
+                            <select asp-for="ConsumableId" class="form-select" required>
+                                <option value="">— Select a consumable —</option>
+                                @foreach (var c in Model.AvailableConsumables)
+                                {
+                                    <option value="@c.ConsumableId">
+                                        @c.ConsumableName — on hand: @c.QuantityOnHand (reorder at @c.ReorderLevel)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="ConsumableId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="QuantityRequested" class="form-label">Quantity</label>
+                            <input asp-for="QuantityRequested" type="number" min="1" max="1000"
+                                   class="form-control" />
+                            <span asp-validation-for="QuantityRequested" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Urgency" class="form-label">Urgency</label>
+                            <select asp-for="Urgency" class="form-select">
+                                <option value="Routine">Routine</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                            <span asp-validation-for="Urgency" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label asp-for="Reason" class="form-label">Reason</label>
+                            <input asp-for="Reason" class="form-control"
+                                   placeholder="e.g. Running low during FBC batch" />
+                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-send me-1"></i> Submit Request
+                        </button>
+                        <a asp-action="MySupplyRequests" class="btn btn-outline-secondary">
+                            View my requests
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card soft-card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-muted small fw-semibold mb-3">How it works</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2"><i class="bi bi-1-circle text-primary me-2"></i> Submit your request — status starts as <strong>Pending</strong>.</li>
+                    <li class="mb-2"><i class="bi bi-2-circle text-primary me-2"></i> Lab Manager reviews &amp; approves / rejects.</li>
+                    <li class="mb-2"><i class="bi bi-3-circle text-primary me-2"></i> Approved requests move to <strong>Fulfilled</strong> once stock is issued.</li>
+                    <li><i class="bi bi-info-circle text-primary me-2"></i> Stock on hand is only updated by the Manager's Adjust Stock tool.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

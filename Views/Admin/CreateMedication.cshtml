@@ -1,0 +1,38 @@
+@* ── Views/Admin/CreateMedication.cshtml ── *@
+@model NMB_HLabSys.Models.Domain.Medication
+@{
+    ViewData["Title"] = "Add Medication";
+}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Medication</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateMedication" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+                    <div class="mb-3">
+                        <label asp-for="CategoryId" class="form-label fw-semibold">Category</label>
+                        <select asp-for="CategoryId" class="form-select"
+                                asp-items="@(new SelectList(ViewBag.Categories as IEnumerable<NMB_HLabSys.Models.Domain.MedicationCategory>, "CategoryId", "CategoryName"))">
+                            <option value="">— Select Category —</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="MedicationName" class="form-label fw-semibold"></label>
+                        <input asp-for="MedicationName" class="form-control" placeholder="e.g. Warfarin" />
+                        <span asp-validation-for="MedicationName" class="text-danger small"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save</button>
+                        <a asp-action="Medications" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

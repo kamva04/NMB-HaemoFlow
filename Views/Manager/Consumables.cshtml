@@ -1,0 +1,88 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Consumable>
+@{
+    ViewData["Title"] = "Consumables";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-box-seam text-primary me-2"></i>Consumables</h4>
+    <a asp-action="CreateConsumable" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add Consumable</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Supplier</th>
+                    <th class="text-center">On Hand</th>
+                    <th class="text-center">Reorder At</th>
+                    <th class="text-center">Stock Status</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    bool critical = c.QuantityOnHand <= c.ReorderLevel;
+                    bool low = !critical && c.QuantityOnHand <= c.ReorderLevel * 1.1;
+                    <tr class="@(critical ? "table-danger" : low ? "table-warning" : !c.IsActive ? "table-secondary" : "")">
+                        <td class="fw-semibold @(!c.IsActive ? "text-muted" : "")">@c.ConsumableName</td>
+                        <td class="small">@c.Supplier?.SupplierName</td>
+                        <td class="text-center fw-bold @(critical ? "text-danger" : low ? "text-warning" : "")">@c.QuantityOnHand</td>
+                        <td class="text-center text-muted small">@c.ReorderLevel</td>
+                        <td class="text-center">
+                            @if (!c.IsActive)
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                            else if (critical)
+                            {
+
+                                <span class="badge bg-danger"><i class="bi bi-exclamation-octagon me-1"></i>Critical</span>
+                            }
+                            else if (low)
+                            {
+
+                                <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Low</span>
+                            }
+                            else
+                            {
+
+                                <span class="badge bg-success">OK</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (c.IsActive)
+                            {
+                                <i class="bi bi-check-circle text-success"></i>
+                            }
+                            else
+                            {
+
+                                <i class="bi bi-x-circle text-secondary"></i>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="AdjustStock" asp-route-id="@c.ConsumableId" class="btn btn-sm btn-outline-secondary me-1" title="Adjust Stock"><i class="bi bi-sliders"></i></a>
+                            <a asp-action="EditConsumable" asp-route-id="@c.ConsumableId" class="btn btn-sm btn-outline-primary me-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="@(c.IsActive ? "DeleteConsumable" : "RestoreConsumable")" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@c.ConsumableId" />
+                                <button type="submit" class="btn btn-sm @(c.IsActive ? "btn-outline-danger" : "btn-outline-success")" title="@(c.IsActive ? "Archive" : "Restore")"
+                                        onclick="return confirm('@(c.IsActive ? "Archive" : "Restore") @c.ConsumableName?')">
+                                    <i class="bi @(c.IsActive ? "bi-archive" : "bi-arrow-counterclockwise")"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">No consumables yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

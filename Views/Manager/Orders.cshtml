@@ -1,0 +1,73 @@
+
+@model IEnumerable<NMB_HLabSys.Models.Domain.StockOrder>
+@{
+    ViewData["Title"] = "Stock Orders";
+    int lowCount = Convert.ToInt32(ViewBag.LowStockCount ?? 0);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Stock Orders</h4>
+        @if (lowCount > 0)
+        {
+            <span class="badge bg-danger ms-1">
+                <i class="bi bi-exclamation-triangle me-1"></i>@lowCount consumable(s) at/below reorder level
+            </span>
+        }
+    </div>
+    <a asp-action="CreateOrder" class="btn btn-primary">
+        <i class="bi bi-cart-plus me-1"></i>New Order
+    </a>
+</div>
+
+@if (lowCount > 0)
+{
+    <div class="alert alert-danger mb-4">
+        <i class="bi bi-exclamation-octagon me-2"></i>
+        <strong>@lowCount consumable(s)</strong> are at or below reorder level.
+        <a asp-action="CreateOrder" class="alert-link ms-2">Place a new order now →</a>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order #</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold font-monospace">@o.OrderNumber</td>
+                        <td>@o.Supplier?.SupplierName</td>
+                        <td class="small">@o.OrderDate.ToString("dd MMM yyyy")</td>
+                        <td class="text-center">
+                            <span class="badge
+                                    @(o.Status == "Complete" ? "bg-success" :
+                                                                    o.Status == "PartiallyComplete" ? "bg-warning text-dark" :
+                                                                    o.Status == "Cancelled" ? "bg-danger" : "bg-primary")">
+                            @o.Status
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="OrderDetails" asp-route-id="@o.OrderId" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i>Details
+                        </a>
+                    </td>
+                </tr>
+                                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4">No orders yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

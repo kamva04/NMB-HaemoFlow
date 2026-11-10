@@ -1,0 +1,109 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.TestCategory>
+@{
+    ViewData["Title"] = "Test Categories";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-tags text-primary me-2"></i>Test Categories
+        </h4>
+        <p class="text-muted mb-0 small">Manage haematology test categories used across the system</p>
+    </div>
+    <a asp-action="CreateCategory" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>New Category
+    </a>
+</div>
+
+<!-- Search box -->
+<div class="mb-3">
+    <input type="text" id="catSearch" class="form-control" style="max-width:320px"
+           placeholder="Search categories…" />
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle" id="catTable">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width:40px">#</th>
+                    <th>Category Name</th>
+                    <th>Description</th>
+                    <th class="text-center" style="width:100px">Test Types</th>
+                    <th class="text-end" style="width:120px">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int rowNum = 1; }
+                @foreach (var cat in Model)
+                {
+                    <tr>
+                        <td class="text-muted small">@rowNum</td>
+                        <td class="fw-semibold">@cat.CategoryName</td>
+                        <td class="text-muted small">
+                            @(string.IsNullOrWhiteSpace(cat.Description) ? "—" : cat.Description)
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary rounded-pill" id="ttcount_@cat.CategoryId">—</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="EditCategory" asp-route-id="@cat.CategoryId"
+                               class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-action="TestTypes" class="btn btn-sm btn-outline-secondary"
+                               title="View test types in this category">
+                                <i class="bi bi-list-ul"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    rowNum++;
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-5">
+                            <i class="bi bi-tags fs-2 d-block mb-2 opacity-25"></i>
+                            No test categories yet. Click <strong>New Category</strong> to add one.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer text-muted small d-flex justify-content-between">
+        <span>Total: <strong>@Model.Count()</strong> @(Model.Count() == 1 ? "category" : "categories")</span>
+        <a asp-action="TestTypes" class="text-decoration-none small">
+            <i class="bi bi-clipboard2-pulse me-1"></i>Manage Test Types →
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Live search
+    document.getElementById('catSearch').addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#catTable tbody tr[data-bs-toggle!=""]').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+
+    // Load test-type counts per category
+    fetch('/Manager/CategoryCountsJson')
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(d => {
+                const el = document.getElementById(`ttcount_${d.categoryId}`);
+                if (el) {
+                    el.textContent = d.count;
+                    el.className = d.count > 0
+                        ? 'badge bg-primary rounded-pill'
+                        : 'badge bg-light text-dark border rounded-pill';
+                }
+            });
+        })
+        .catch(() => {});
+</script>
+}

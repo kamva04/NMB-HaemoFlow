@@ -1,0 +1,79 @@
+﻿@* ── Views/Doctor/FindPatientForRequest.cshtml ── *@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Patient>
+@{
+    ViewData["Title"] = "Find Patient";
+    var q = ViewBag.Query as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-search text-primary me-2"></i>Find Patient</h4>
+    <a asp-action="CreatePatient" class="btn btn-outline-primary">
+        <i class="bi bi-person-plus me-1"></i>Register New Patient
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <p class="text-muted small mb-3">
+            Enter the patient's complete 13-digit South African ID number to find their record.
+        </p>
+        <form asp-action="FindPatientForRequest" method="get">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" value="@q"
+                       placeholder="13-digit South African ID number" maxlength="13"
+                       inputmode="numeric" pattern="[0-9]{13}" required autofocus />
+                <button type="submit" class="btn btn-primary px-4">Search</button>
+            </div>
+        </form>
+        @if (ViewBag.SearchError != null)
+        {
+            <div class="text-danger small mt-2">@ViewBag.SearchError</div>
+        }
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(q))
+{
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Patient</th>
+                        <th>ID Number</th>
+                        <th>Date of Birth</th>
+                        <th>Email</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@p.Name @p.Surname</td>
+                            <td class="font-monospace small">@p.SAIDNumber</td>
+                            <td class="small">@p.DateOfBirth.ToString("yyyy-MM-dd")</td>
+                            <td class="text-muted small">@p.User?.Email</td>
+                            <td class="text-end">
+                                <a asp-action="CreateRequest" asp-route-patientId="@p.PatientId"
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-clipboard2-plus me-1"></i>New Request
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No patient was found for ID number "@q". If this is a brand-new patient,
+                                <a asp-action="CreatePatient">register them</a> instead.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,9 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.TestResultHistory>
+@{
+    ViewData["Title"] = "Result History";
+}
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h4 class="fw-bold mb-1"><i class="bi bi-clock-history text-primary me-2"></i>Full Test Result History</h4><div class="text-muted">Request test #@ViewBag.RequestTestId</div></div><a asp-action="Dashboard" class="btn btn-outline-secondary">Dashboard</a></div>
+<div class="card shadow-sm"><div class="card-body p-0 table-responsive"><table class="table table-hover mb-0 align-middle"><thead class="table-dark"><tr><th>Date / Time</th><th>Action</th><th>Result</th><th>Notes</th></tr></thead><tbody>
+@foreach(var h in Model){<tr class="@(h.Action == "ReturnedForReview" ? "table-warning" : h.Action == "Verified" ? "table-success" : "")"><td>@h.ActionDate.ToString("dd MMM yyyy HH:mm")</td><td class="fw-semibold">@h.Action</td><td>@(h.ResultValue?.ToString("F2") ?? "—")</td><td>@(h.Notes ?? "—")</td></tr>}
+@if(!Model.Any()){<tr><td colspan="4" class="text-center text-muted py-4">No history records found.</td></tr>}
+</tbody></table></div></div>

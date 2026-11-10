@@ -1,0 +1,70 @@
+@* ── Views/Doctor/ReleaseResults.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.ReleaseResultViewModel
+@{
+    ViewData["Title"] = "Release Results";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-send me-2"></i>Release Results to Patient</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-light border small mb-4">
+                    <div><strong>Request:</strong> @Model.RequestNumber</div>
+                    <div><strong>Patient:</strong> @Model.PatientName</div>
+                    <div>
+                        <strong>Email:</strong>
+                        @(string.IsNullOrWhiteSpace(Model.PatientEmail) ? "— not on file —" : Model.PatientEmail)
+                    </div>
+                    @if (Model.AbnormalCount > 0)
+                    {
+                        <div class="text-warning mt-2">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>@Model.AbnormalCount abnormal result(s):</strong>
+                            @string.Join(", ", Model.AbnormalTestNames)
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-success mt-2">
+                            <i class="bi bi-check-circle me-1"></i>All results are within normal range.
+                        </div>
+                    }
+                </div>
+
+                <form asp-action="ReleaseResults" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="RequestId" type="hidden" />
+
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <input asp-for="NotifyType" type="hidden" value="Email" />
+                    <p class="form-text small mb-3">
+                        Releasing results sends the report by email. Appointment proposals are managed separately.
+                    </p>
+
+                    <div class="mb-4">
+                        <label asp-for="DoctorNote" class="form-label fw-semibold">Message / Note for Patient</label>
+                        <textarea asp-for="DoctorNote" class="form-control" rows="4"
+                                  placeholder="Optional message to accompany results…"></textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send me-1"></i>Release & Notify Patient
+                        </button>
+                        <a asp-action="RequestDetails" asp-route-id="@Model.RequestId" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Request
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

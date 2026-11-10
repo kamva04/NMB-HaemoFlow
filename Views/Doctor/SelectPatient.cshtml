@@ -1,0 +1,63 @@
+﻿@* ── Views/Doctor/SelectPatient.cshtml ── *@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Patient>
+@{
+    ViewData["Title"] = "Select Patient";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0"><i class="bi bi-clipboard2-plus text-primary me-2"></i>New Test Request</h4>
+        <p class="text-muted mb-0">Select a patient or register someone new</p>
+    </div>
+    <a asp-action="CreatePatient" asp-route-from="request" class="btn btn-success">
+        <i class="bi bi-person-plus me-1"></i>Register New Patient
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>First Name</th>
+                    <th>Surname</th>
+                    <th>Date of Birth</th>
+                    <th>Email</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@p.Name</td>
+                        <td>@p.Surname</td>
+                        <td class="small">@p.DateOfBirth.ToString("dd MMM yyyy")</td>
+                        <td class="text-muted small">@p.User?.Email</td>
+                        <td class="text-end">
+                            <a asp-action="CreateRequest" asp-route-patientId="@p.PatientId"
+                               class="btn btn-sm btn-primary">
+                                <i class="bi bi-clipboard2-plus me-1"></i>Create Request
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No patients found.
+                            <a asp-action="CreatePatient" asp-route-from="request">Register a new patient</a> to submit a test request.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-action="TrackRequests" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Track Requests
+    </a>
+</div>

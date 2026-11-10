@@ -1,0 +1,174 @@
+@* ── Views/Doctor/CreatePatient.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.PatientCreateViewModel
+@{
+    ViewData["Title"] = "Register Patient";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Register New Patient</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreatePatient" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <h6 class="fw-bold text-muted mb-3 text-uppercase small">Personal Details</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Surname" class="form-label fw-semibold"></label>
+                            <input asp-for="Surname" class="form-control" />
+                            <span asp-validation-for="Surname" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="SAIDNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="SAIDNumber" class="form-control" maxlength="13" />
+                            <span asp-validation-for="SAIDNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DateOfBirth" class="form-label fw-semibold"></label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" readonly />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Gender" class="form-label fw-semibold"></label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="">Select gender</option>
+                                <option>Female</option>
+                                <option>Male</option>
+                                <option>Other</option>
+                                <option>Prefer not to say</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="CellNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="CellNumber" class="form-control" type="tel" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" />
+                            <span asp-validation-for="CellNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                            <div class="form-text">A temporary password will be e-mailed to this address.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Street" class="form-label fw-semibold"></label>
+                            <input asp-for="Street" class="form-control" placeholder="Street address" />
+                            <span asp-validation-for="Street" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Street2" class="form-label fw-semibold"></label>
+                            <input asp-for="Street2" class="form-control" placeholder="Apartment, building, or second street line (optional)" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Province" class="form-label fw-semibold"></label>
+                            <select asp-for="Province" class="form-select" id="Province">
+                                <option value="">Select province first</option>
+                                <option>Eastern Cape</option>
+                                <option>Free State</option>
+                                <option>Gauteng</option>
+                                <option>KwaZulu-Natal</option>
+                                <option>Limpopo</option>
+                                <option>Mpumalanga</option>
+                                <option>North West</option>
+                                <option>Northern Cape</option>
+                                <option>Western Cape</option>
+                            </select>
+                            <span asp-validation-for="Province" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Town" class="form-label fw-semibold"></label>
+                            <select asp-for="Town" class="form-select" id="Town" data-selected-town="@Model.Town" disabled>
+                                <option value="">Select a province first</option>
+                            </select>
+                            <span asp-validation-for="Town" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Suburb" class="form-label fw-semibold"></label>
+                            <input asp-for="Suburb" class="form-control" placeholder="Enter suburb" />
+                            <span asp-validation-for="Suburb" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="PostalCode" class="form-label fw-semibold"></label>
+                            <input asp-for="PostalCode" class="form-control" maxlength="4" inputmode="numeric" />
+                            <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted mb-3 text-uppercase small">Medical History</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Chronic Conditions</label>
+                            <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                                @foreach (var c in Model.AvailableConditions)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedConditionIds" value="@c.ConditionId"
+                                               id="cond_@c.ConditionId" />
+                                        <label class="form-check-label small" for="cond_@c.ConditionId">
+                                            @c.ConditionName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Allergies</label>
+                            <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                                @foreach (var a in Model.AvailableAllergies)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedAllergyIds" value="@a.AllergyId"
+                                               id="allg_@a.AllergyId" />
+                                        <label class="form-check-label small" for="allg_@a.AllergyId">
+                                            @a.AllergyName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Current Medication</label>
+                            <div class="border rounded p-2" style="max-height:180px;overflow-y:auto;">
+                                @foreach (var m in Model.AvailableMedications)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="SelectedMedicationIds" value="@m.MedicationId"
+                                               id="med_@m.MedicationId" />
+                                        <label class="form-check-label small" for="med_@m.MedicationId">
+                                            @m.MedicationName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-check me-1"></i>Register & Email Login
+                        </button>
+                        <a asp-action="Patients" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/patient-address.js"></script>
+    <script src="~/js/patient-id.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

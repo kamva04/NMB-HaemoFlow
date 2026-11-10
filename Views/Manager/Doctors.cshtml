@@ -1,0 +1,50 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.Doctor>
+@{ ViewData["Title"] = "Doctors"; }
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-person-badge text-primary me-2"></i>Registered Doctors</h4>
+    <a asp-action="CreateDoctor" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Add Doctor</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success" role="alert">@TempData["Success"]</div>
+}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr><th>Name</th><th>HPCSA #</th><th>Email</th><th>Contact</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">Dr @d.Name @d.Surname</td>
+                        <td class="font-monospace small">@d.HPCSANumber</td>
+                        <td class="text-muted small">@d.User?.Email</td>
+                        <td class="small">@(d.ContactNumber ?? "—")</td>
+                        <td><span class="badge @(d.IsDeleted ? "bg-secondary" : "bg-success")">@(d.IsDeleted ? "Archived" : "Active")</span></td>
+                        <td class="text-end text-nowrap">
+                            <a asp-action="EditDoctor" asp-route-id="@d.DoctorId"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form asp-action="@(d.IsDeleted ? "RestoreDoctor" : "ArchiveDoctor")" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@d.DoctorId" />
+                                <button type="submit"
+                                        class="btn btn-sm @(d.IsDeleted ? "btn-outline-success" : "btn-outline-danger")"
+                                        onclick="return confirm('@(d.IsDeleted ? "Restore this doctor and allow sign-in?" : "Archive this doctor? Sign-in will be disabled, but history will be preserved.")')">
+                                    @(d.IsDeleted ? "Restore" : "Archive")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any()) { <tr><td colspan="6" class="text-center text-muted py-4">No doctors registered.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>

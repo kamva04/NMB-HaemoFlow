@@ -1,0 +1,32 @@
+@model NMB_HLabSys.Models.ViewModels.CaptureResultViewModel
+@{
+    ViewData["Title"] = Model.IsResubmission ? "Review Result" : "Capture Result";
+}
+<div class="row justify-content-center"><div class="col-lg-8">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>@ViewData["Title"] – @Model.TestName</h5></div>
+        <div class="card-body p-4">
+            <div class="row g-3 mb-4"><div class="col-md-6"><span class="text-muted small">Request</span><div class="fw-semibold">@Model.RequestNumber</div></div><div class="col-md-6"><span class="text-muted small">Patient</span><div class="fw-semibold">@Model.PatientName</div></div><div class="col-md-6"><span class="text-muted small">Urgency</span><div>@Model.Urgency</div></div><div class="col-md-6"><span class="text-muted small">Status</span><div><span class="badge @(Model.IsResubmission ? "bg-warning text-dark" : "bg-primary")">@Model.Status</span></div></div></div>
+
+            @if (Model.IsResubmission) { <div class="alert alert-warning"><i class="bi bi-arrow-counterclockwise me-2"></i>This result was returned for review. Correct it and submit it again for independent verification.</div> }
+            @if (Model.NormalRangeMin.HasValue || Model.NormalRangeMax.HasValue) { <div class="alert alert-info small">Normal range: <strong>@Model.NormalRangeMin?.ToString("F2") – @Model.NormalRangeMax?.ToString("F2") @Model.Units</strong></div> }
+            @if (!string.IsNullOrWhiteSpace(Model.ClinicalNotes)) { <div class="alert alert-light border"><strong>Clinical notes:</strong> @Model.ClinicalNotes</div> }
+
+            <form asp-action="CaptureResult" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="RequestTestId" type="hidden" />
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+                <div class="mb-3"><label asp-for="ResultValue" class="form-label fw-semibold"></label><div class="input-group"><input asp-for="ResultValue" type="number" step="0.01" class="form-control form-control-lg" id="resultInput" /><span class="input-group-text">@Model.Units</span></div><span asp-validation-for="ResultValue" class="text-danger small"></span><div id="abnormalWarning" class="alert alert-danger mt-2 d-none py-2"><i class="bi bi-exclamation-triangle me-1"></i>Value is outside the configured normal range and will be flagged abnormal.</div></div>
+                <div class="mb-4"><label asp-for="ResultNotes" class="form-label fw-semibold"></label><textarea asp-for="ResultNotes" class="form-control" rows="4" placeholder="Enter relevant observations or result notes…"></textarea><span asp-validation-for="ResultNotes" class="text-danger small"></span></div>
+                <div class="d-flex gap-2"><button class="btn btn-success"><i class="bi bi-save me-1"></i>@(Model.IsResubmission ? "Submit Revised Result" : "Save Result")</button><a asp-action="TestDetails" asp-route-requestTestId="@Model.RequestTestId" class="btn btn-outline-secondary">Cancel</a></div>
+            </form>
+        </div>
+    </div>
+</div></div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /><script>
+const min = @(Model.NormalRangeMin?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null");
+const max = @(Model.NormalRangeMax?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null");
+const input = document.getElementById('resultInput'); const warning = document.getElementById('abnormalWarning');
+function check(){ const v=parseFloat(input.value); const abnormal=!Number.isNaN(v)&&((min!==null&&v<min)||(max!==null&&v>max)); warning.classList.toggle('d-none',!abnormal); }
+input.addEventListener('input',check); check();
+</script> }

@@ -1,0 +1,215 @@
+@* ── Views/Patient/Consent.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.ConsentManagementViewModel
+@{
+    ViewData["Title"] = "Manage Consent";
+}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-shield-check text-primary me-2"></i>Doctor Access Consent</h4>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">Doctors With Current Access</div>
+            <div class="card-body p-0">
+                <table class="table table-hover table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr><th>Doctor</th><th>Shared item</th><th>Request</th><th>Test date</th><th class="text-end">Action</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.ActiveConsents.Where(c => c.IsActive))
+                        {
+                            <tr>
+                                <td>Dr @c.Doctor?.Name @c.Doctor?.Surname</td>
+                                <td class="small">
+                                    @if (c.RequestTest?.TestType != null)
+                                    {
+                                        <span class="fw-semibold">Test: @c.RequestTest.TestType.TestName</span>
+                                        <span class="text-muted d-block">Result: @(c.RequestTest.ResultValue?.ToString("F2") ?? "Pending")</span>
+                                    }
+                                    else if (c.Sample != null)
+                                    {
+                                        <span class="fw-semibold">Sample: @c.Sample.Barcode</span>
+                                        <span class="text-muted d-block">@c.Sample.SampleType?.TypeName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Legacy request access</span>
+                                    }
+                                </td>
+                                <td class="small">
+                                    <span class="font-monospace">@c.Request?.RequestNumber</span>
+                                    <span class="text-muted d-block">@c.Request?.RequestDate.ToString("dd MMM yyyy")</span>
+                                </td>
+                                <td class="small text-muted">
+                                    @(c.RequestTest?.CompletedAt?.ToString("dd MMM yyyy") ??
+                                        c.Request?.RequestDate.ToString("dd MMM yyyy") ?? "—")
+                                    <span class="d-block">Granted @c.GrantedAt.ToString("dd MMM yyyy")</span>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="RevokeConsent" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="consentId" value="@c.ConsentId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Revoke Dr @c.Doctor?.Surname\'s access to request @c.Request?.RequestNumber?')">
+                                            <i class="bi bi-x-circle me-1"></i>Revoke
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.ActiveConsents.Any(c => c.IsActive))
+                        {
+                            <tr><td colspan="5" class="text-center text-muted py-3">No doctors have access.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold text-success">
+                <i class="bi bi-person-plus me-2"></i>Grant Access to a Doctor
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted small mb-3">
+                    Select a doctor and choose the tests or sample you want to share with them.
+                </p>
+                <form asp-action="GrantConsent" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Doctor</label>
+                        <select name="doctorId" class="form-select" required>
+                            <option value="">— Choose Doctor —</option>
+                            @foreach (var doctor in Model.AllDoctors)
+                            {
+                                <option value="@doctor.DoctorId">Dr @doctor.Name @doctor.Surname</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-semibold mb-0">Select tests</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" id="clearTests">Clear</button>
+                            </div>
+                        </div>
+                        <div class="table-responsive border rounded" style="max-height:360px; overflow-y:auto;">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light position-sticky top-0">
+                                    <tr>
+                                        <th scope="col">Select</th>
+                                        <th scope="col">Test / request</th>
+                                        <th scope="col">Test date</th>
+                                        <th scope="col">Previous result</th>
+                                        <th scope="col">Doctor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var test in Model.TestTypes)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input class="form-check-input consent-test" type="checkbox"
+                                                       name="requestTestIds" value="@test.RequestTestId"
+                                                       aria-label="Share @test.TestType?.TestName" />
+                                            </td>
+                                            <td class="small">
+                                                <span class="fw-semibold">@test.TestType?.TestName</span>
+                                                <span class="text-muted d-block">@test.Request?.RequestNumber</span>
+                                            </td>
+                                            <td class="small text-nowrap">
+                                                @(test.CompletedAt?.ToString("dd MMM yyyy") ??
+                                                    test.Request?.RequestDate.ToString("dd MMM yyyy") ?? "—")
+                                            </td>
+                                            <td class="small">
+                                                @if (test.ResultValue.HasValue)
+                                                {
+                                                    <span>@test.ResultValue.Value.ToString("F2") @test.TestType?.Units</span>
+                                                    <span class="badge @(test.IsAbnormal ? "bg-danger" : "bg-success")">
+                                                        @(test.IsAbnormal ? "Abnormal" : "Normal")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Pending</span>
+                                                }
+                                            </td>
+                                            <td class="small text-nowrap">
+                                                @if (test.Request?.Doctor != null)
+                                                {
+                                                    @($"Dr {test.Request.Doctor.Name} {test.Request.Doctor.Surname}")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">—</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (!Model.TestTypes.Any())
+                                    {
+                                        <tr><td colspan="5" class="text-center text-muted py-3">No tests are available to share.</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <select name="sampleId" id="sampleId" class="form-select mt-2">
+                            <option value="">— Or choose a sample —</option>
+                            @foreach (var sample in Model.Samples)
+                            {
+                                <option value="@sample.SampleId">
+                                    Sample: @sample.Barcode (@sample.SampleType?.TypeName) — @sample.Request?.RequestNumber — Received: @(sample.ReceivedAt?.ToString("dd MMM yyyy") ?? "Not received")
+                                </option>
+                            }
+                        </select>
+                        @if (!Model.TestTypes.Any() && !Model.Samples.Any())
+                        {
+                            <div class="form-text text-muted">You don't have any tests or samples yet.</div>
+                        }
+                        else
+                        {
+                            <div class="form-text">Select one or more tests <strong>or</strong> one sample, not both.</div>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-success w-100" @(Model.TestTypes.Any() || Model.Samples.Any() ? "" : "disabled")>
+                        <i class="bi bi-shield-check me-1"></i>Grant Access
+                    </button>
+                </form>
+            </div>
+            <script>
+                const testChecks = [...document.querySelectorAll(".consent-test")];
+                const sampleSelect = document.getElementById("sampleId");
+                testChecks.forEach(box => box.addEventListener("change", function () {
+                    if (this.checked) sampleSelect.value = "";
+                }));
+                sampleSelect?.addEventListener("change", function () {
+                    if (this.value) testChecks.forEach(box => box.checked = false);
+                });
+                document.getElementById("selectAllTests")?.addEventListener("click", () => {
+                    if (!sampleSelect.value) testChecks.forEach(box => box.checked = true);
+                });
+                document.getElementById("clearTests")?.addEventListener("click", () => {
+                    testChecks.forEach(box => box.checked = false);
+                });
+            </script>
+        </div>
+    </div>
+</div>

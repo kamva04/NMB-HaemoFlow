@@ -1,0 +1,95 @@
+﻿@model NMB_HLabSys.Models.ViewModels.TestReadyToStartViewModel
+@{
+    ViewData["Title"] = "Tests Ready to Start";
+    string UrgencyBadge(string u) => u switch
+    {
+        "Stat" => "bg-danger",
+        "Urgent" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-play-circle text-success me-2"></i>Tests Ready to Start</h3>
+        <div class="text-muted">Assigned to you, samples received — click Start to begin.</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+@* Filters *@
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold"><i class="bi bi-funnel me-2"></i>Filters</div>
+    <div class="card-body">
+        <form asp-action="TestReadyToStart" method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">Urgency</label>
+                <select name="urgency" class="form-select">
+                    <option value="">All</option>
+                    <option value="Routine" selected='@(Model.UrgencyFilter == "Routine" ? "selected" : null)'>Routine</option>
+                    <option value="Urgent" selected='@(Model.UrgencyFilter == "Urgent" ? "selected" : null)'>Urgent</option>
+                    <option value="Stat" selected='@(Model.UrgencyFilter == "Stat" ? "selected" : null)'>STAT</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Request number</label>
+                <input name="requestNumber" value="@Model.RequestNumberFilter" class="form-control" placeholder="Search request…" />
+            </div>
+            <div class="col-md-4 d-grid d-md-flex gap-2">
+                <button class="btn btn-primary flex-fill"><i class="bi bi-search me-1"></i>Filter</button>
+                <a asp-action="TestReadyToStart" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Table *@
+<div class="card shadow-sm">
+    <div class="card-header fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-list-check me-2"></i>Tests waiting to be started</span>
+        <span class="badge bg-success">@Model.Rows.Count</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Request #</th>
+                    <th>Patient</th>
+                    <th>Test</th>
+                    <th>Sample type</th>
+                    <th>Urgency</th>
+                    <th>Requested</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td class="font-monospace fw-semibold">@r.RequestNumber</td>
+                        <td>@r.Patient</td>
+                        <td>
+                            <div class="fw-semibold">@r.TestName</div>
+                            <div class="text-muted small">@r.Category</div>
+                        </td>
+                        <td class="text-muted small">@r.SampleType</td>
+                        <td><span class="badge @UrgencyBadge(r.Urgency)">@r.Urgency</span></td>
+                        <td class="text-muted small">@r.RequestDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td class="text-end">
+                            <a asp-action="ConfirmStart" asp-route-requestTestId="@r.RequestTestId"
+                               class="btn btn-sm btn-success">
+                                <i class="bi bi-play me-1"></i>Start
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Rows.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">No tests are ready to start right now.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

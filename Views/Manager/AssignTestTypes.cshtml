@@ -1,0 +1,34 @@
+@model NMB_HLabSys.Models.ViewModels.TechnicianAssignmentsViewModel
+@{ ViewData["Title"] = "Assign Test Types"; }
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div><h1 class="h4 fw-bold text-primary">Test Type Assignments</h1><p class="mb-0">@Model.TechnicianName <span class="text-muted">(@Model.EmployeeNumber)</span></p></div>
+    <a asp-action="Technicians" class="btn btn-outline-secondary">Back to Technicians</a>
+</div>
+<div class="card"><div class="card-body p-4">
+@if (Model.IsArchived) { <div class="alert alert-info">This technician is archived. Restore them to change assignments.</div> }
+    <p>Checked test types are assigned to this technician. Select the active tests they can perform, then save your changes.</p>
+    <form asp-action="AssignTestTypes" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="TechnicianId" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Assign</th><th>Test type</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var test in Model.TestTypes)
+                    {
+                        <tr class="@(!test.IsActive ? "table-light text-muted" : "")">
+                            <td><input type="checkbox" class="form-check-input" name="SelectedTestTypeIds" value="@test.TestTypeId" id="test-@test.TestTypeId" checked="@Model.SelectedTestTypeIds.Contains(test.TestTypeId)" disabled="@(!test.IsActive || Model.IsArchived)" /></td>
+                            <td><label for="test-@test.TestTypeId">@test.TestName</label></td>
+                            <td><span class="badge @(test.IsActive ? "bg-success" : "bg-secondary")">@(test.IsActive ? "Active" : "Inactive")</span></td>
+                        </tr>
+                    }
+                    @if (!Model.TestTypes.Any()) { <tr><td colspan="3" class="text-muted">No test types available. <a asp-action="CreateTestType">Create a test type</a> first.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        <p class="small text-muted">Uncheck an active test to remove its assignment. Assignments to inactive test types are preserved and cannot be changed here.</p>
+        @if (!Model.IsArchived && Model.TestTypes.Any(t => t.IsActive)) { <button type="submit" class="btn btn-primary">Save Assignments</button> }
+        <a asp-action="Technicians" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div></div>

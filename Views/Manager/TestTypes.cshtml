@@ -1,0 +1,96 @@
+
+@model IEnumerable<NMB_HLabSys.Models.Domain.TestType>
+@{
+    ViewData["Title"] = "Test Types";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-clipboard2-pulse text-primary me-2"></i>Test Types</h4>
+    <a asp-action="CreateTestType" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>New Test Type</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Test Name</th>
+                    <th>Category</th>
+                    <th>Sample</th>
+                    <th>Units</th>
+                    <th class="text-center">Normal Range</th>
+                    <th class="text-center">TAT (min)</th>
+                    <th class="text-center">Status</th>
+                    <th>Assigned Technicians</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var tt in Model)
+                {
+                    <tr class="@(!tt.IsActive ? "table-secondary text-muted" : "")">
+                        <td class="fw-semibold">@tt.TestName</td>
+                        <td><span class="badge bg-secondary">@tt.Category?.CategoryName</span></td>
+                        <td class="small">@tt.SampleType?.TypeName</td>
+                        <td class="small">@(tt.Units ?? "—")</td>
+                        <td class="text-center small">
+                            @if (tt.NormalRangeMin.HasValue && tt.NormalRangeMax.HasValue)
+                            {
+                                @($"{tt.NormalRangeMin:F2} – {tt.NormalRangeMax:F2}")
+                            }
+                            else
+                            {
+
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-center">@tt.TurnaroundMinutes</td>
+                        <td class="text-center">
+                            @if (tt.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="AssignTechnicians" asp-route-id="@tt.TestTypeId" class="btn btn-sm btn-outline-primary">@(tt.IsActive ? "View / Assign" : "View assignments")</a>
+                        </td>
+                        <td class="text-end">
+                            @if (tt.IsActive)
+                            {
+                                <a asp-action="EditTestType" asp-route-id="@tt.TestTypeId"
+                                   class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil"></i>Edit</a>
+                                <form asp-action="SoftDeleteTestType" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@tt.TestTypeId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Deactivate @tt.TestName?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form asp-action="RestoreTestType" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@tt.TestTypeId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i>Restore
+                                    </button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">No test types yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

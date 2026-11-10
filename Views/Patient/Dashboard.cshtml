@@ -1,0 +1,481 @@
+@* Views/Patient/Dashboard.cshtml *@
+@model NMB_HLabSys.Models.ViewModels.PatientDashboardViewModel
+
+@{
+    ViewData["Title"] = "My Dashboard";
+
+    var totalRequests = (int)(ViewBag.TotalRequests ?? 0);
+    var completedRequests = (int)(ViewBag.CompletedCount ?? 0);
+    var pendingRequests = (int)(ViewBag.PendingCount ?? 0);
+    var releasedRequests = (int)(ViewBag.ReleasedCount ?? 0);
+}
+
+<style>
+
+    .dashboard-card {
+        border: none;
+        border-radius: 16px;
+        transition: all 0.25s ease;
+        height: 100%;
+    }
+
+    .dashboard-stat-link {
+        color: inherit;
+        display: block;
+        height: 100%;
+        text-decoration: none;
+    }
+
+    .dashboard-stat-link:hover {
+        color: inherit;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.10);
+        }
+
+    .shortcut-card {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+        .shortcut-card:hover {
+            color: inherit;
+        }
+
+    .shortcut-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .welcome-card {
+        border: none;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        color: white;
+    }
+
+    .profile-info {
+        background: rgba(255,255,255,0.12);
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    .section-title {
+        font-weight: 700;
+    }
+
+    .table-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .quick-action-title {
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .quick-action-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+</style>
+
+
+<!-- ========================================================= -->
+<!-- WELCOME SECTION -->
+<!-- ========================================================= -->
+
+<div class="card welcome-card shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-8">
+
+                <h2 class="fw-bold mb-2">
+                    Hello, @Model.Patient.Name!
+                </h2>
+
+                <p class="mb-0 opacity-75">
+                    Welcome to your NMB-HLabSys patient portal.
+                    Manage your laboratory requests, medical information
+                    and results from one place.
+                </p>
+
+            </div>
+
+            <div class="col-lg-4 mt-3 mt-lg-0">
+
+                <div class="profile-info">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="shortcut-icon bg-white text-primary me-3">
+                            <i class="bi bi-person"></i>
+                        </div>
+
+                        <div>
+
+                            <div class="small opacity-75">
+                                Patient
+                            </div>
+
+                            <div class="fw-bold">
+                                @Model.Patient.Name @Model.Patient.Surname
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- STATISTICS -->
+<!-- ========================================================= -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6 col-xl-3">
+        <a asp-controller="Patient" asp-action="MyRequests" class="dashboard-stat-link">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Total Requests</div>
+                            <div class="stat-number">@totalRequests</div>
+                        </div>
+                        <div class="shortcut-icon bg-primary-subtle text-primary">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <a asp-controller="Patient" asp-action="MyRequests" class="dashboard-stat-link">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">In Progress</div>
+                            <div class="stat-number">@pendingRequests</div>
+                        </div>
+                        <div class="shortcut-icon bg-warning-subtle text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <a asp-controller="Patient" asp-action="MyRequests" class="dashboard-stat-link">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Completed</div>
+                            <div class="stat-number">@completedRequests</div>
+                        </div>
+                        <div class="shortcut-icon bg-success-subtle text-success">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <a asp-controller="Patient" asp-action="TrackResults" class="dashboard-stat-link">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small">Results Available</div>
+                            <div class="stat-number">@releasedRequests</div>
+                        </div>
+                        <div class="shortcut-icon bg-info-subtle text-info">
+                            <i class="bi bi-file-earmark-medical"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- QUICK SHORTCUTS -->
+<!-- ========================================================= -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h5 class="section-title mb-0">
+        <i class="bi bi-grid me-2 text-primary"></i>
+        Quick Actions
+    </h5>
+
+</div>
+
+
+<div class="row g-3 mb-4">
+
+
+    <!-- Edit Profile -->
+
+    <div class="col-md-6 col-lg-4">
+
+        <a asp-controller="Patient"
+           asp-action="EditProfile"
+           class="shortcut-card">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="shortcut-icon bg-primary-subtle text-primary me-3">
+
+                            <i class="bi bi-person-gear"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="quick-action-title">
+                                Edit Profile
+                            </div>
+
+                            <div class="quick-action-description">
+                                Update your personal information
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <!-- Medical History -->
+
+    <div class="col-md-6 col-lg-4">
+
+        <a asp-controller="Patient"
+           asp-action="MedicalHistory"
+           class="shortcut-card">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="shortcut-icon bg-danger-subtle text-danger me-3">
+
+                            <i class="bi bi-heart-pulse"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="quick-action-title">
+                                Medical History
+                            </div>
+
+                            <div class="quick-action-description">
+                                View your medical information
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+ 
+    <!-- Consent -->
+
+    <div class="col-md-6 col-lg-4">
+
+        <a asp-controller="Patient"
+           asp-action="Consent"
+           class="shortcut-card">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="shortcut-icon bg-warning-subtle text-warning me-3">
+
+                            <i class="bi bi-shield-check"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="quick-action-title">
+                                Doctor Consent
+                            </div>
+
+                            <div class="quick-action-description">
+                                Manage doctor access permissions
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <!-- Reports -->
+
+    <div class="col-md-6 col-lg-4">
+
+        <a asp-controller="Patient"
+           asp-action="Reports"
+           class="shortcut-card">
+
+            <div class="card dashboard-card shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex align-items-center">
+
+                        <div class="shortcut-icon bg-info-subtle text-info me-3">
+
+                            <i class="bi bi-bar-chart"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="quick-action-title">
+                                Reports
+                            </div>
+
+                            <div class="quick-action-description">
+                                View your laboratory reports
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-controller="Patient" asp-action="MyRequests" class="shortcut-card">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="shortcut-icon bg-secondary-subtle text-secondary me-3">
+                            <i class="bi bi-file-earmark-check"></i>
+                        </div>
+                        <div>
+                            <div class="quick-action-title">My Test Requests</div>
+                            <div class="quick-action-description">View your laboratory requests</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-controller="Patient" asp-action="TrackResults" class="shortcut-card">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="shortcut-icon bg-success-subtle text-success me-3">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <div>
+                            <div class="quick-action-title">Track Results</div>
+                            <div class="quick-action-description">Filter and graph your results over time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-controller="Patient" asp-action="Appointments" class="shortcut-card">
+            <div class="card dashboard-card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="shortcut-icon bg-primary-subtle text-primary me-3">
+                            <i class="bi bi-calendar2-check"></i>
+                        </div>
+                        <div>
+                            <div class="quick-action-title">My Appointments</div>
+                            <div class="quick-action-description">Confirm or decline appointment proposals</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>

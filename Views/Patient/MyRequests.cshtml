@@ -1,0 +1,97 @@
+﻿@* ── Views/Patient/MyRequests.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.PatientDashboardViewModel
+@{
+    ViewData["Title"] = "My Test Requests";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-clipboard2-pulse text-primary me-2"></i>My Test Requests
+        </h4>
+        <p class="text-muted mb-0 small">All test requests linked to your account</p>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="mb-3">
+    <input type="text" id="reqSearch" class="form-control" style="max-width:320px"
+           placeholder="Search by request # or status...">
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle" id="requestsTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>Request #</th>
+                    <th>Date</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th class="text-end">Results</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Requests)
+                {
+                    <tr>
+                        <td class="font-monospace fw-semibold">
+                            <a asp-action="ViewDetails" asp-route-requestId="@r.RequestId">@r.RequestNumber</a>
+                        </td>
+                        <td>@r.RequestDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <span class="badge @(r.Urgency == "Stat" ? "badge-stat" : r.Urgency == "Urgent" ? "badge-urgent" : "badge-routine")">
+                                @r.Urgency
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge
+                                @(r.Status == "ReleasedByDoctor" ? "bg-success" :
+                                    r.Status == "Completed" ? "bg-info text-dark" :
+                                    r.Status == "Cancelled" ? "bg-danger" :
+                                    r.Status == "InProgress" ? "bg-primary" : "bg-secondary")">
+                                @NMB_HLabSys.Helpers.StatusDisplay.Format(r.Status)
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            @if (r.Status == "ReleasedByDoctor")
+                            {
+                                <div class="d-flex gap-1 justify-content-end">
+                                    <a asp-action="ViewResults" asp-route-requestId="@r.RequestId"
+                                       class="btn btn-sm btn-success">
+                                        <i class="bi bi-eye me-1"></i>View Results
+                                    </a>
+                                    <a asp-controller="Report" asp-action="PatientRequestPdf" asp-route-requestId="@r.RequestId"
+                                       class="btn btn-sm btn-outline-danger" title="Download PDF">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Not yet released</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Requests.Any())
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-4">No test requests found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('reqSearch').addEventListener('input', function () {
+            const term = this.value.trim().toLowerCase();
+            document.querySelectorAll('#requestsTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        });
+    </script>
+}

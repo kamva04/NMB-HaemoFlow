@@ -1,0 +1,48 @@
+@model NMB_HLabSys.Models.ViewModels.PatientMedicalHistoryEditViewModel
+@{
+    var labels = new Dictionary<string, string>
+    {
+        ["condition"] = "Condition",
+        ["allergy"] = "Allergy",
+        ["medication"] = "Medication"
+    };
+    var label = labels[Model.EntryType];
+    ViewData["Title"] = Model.CurrentItemId.HasValue ? $"Edit {label}" : $"Add {label}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold">
+                @(Model.CurrentItemId.HasValue ? $"Edit {label}" : $"Add {label}")
+            </div>
+            <div class="card-body">
+                @if (Model.CurrentItemId.HasValue)
+                {
+                    <p class="text-muted">Current entry: @Model.CurrentName</p>
+                }
+                <form asp-action="EditMedicalHistory" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="EntryType" type="hidden" />
+                    <input asp-for="CurrentItemId" type="hidden" />
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+                    <div class="mb-3">
+                        <label asp-for="SelectedItemId" class="form-label fw-semibold">@label</label>
+                        <select asp-for="SelectedItemId" class="form-select" asp-items="ViewBag.Options">
+                            <option value="0">— Select @label —</option>
+                        </select>
+                        <span asp-validation-for="SelectedItemId" class="text-danger small"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a asp-action="MedicalHistory" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

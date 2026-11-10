@@ -1,0 +1,84 @@
+@* ── Views/Manager/CreateOrder.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.CreateOrderViewModel
+@{
+    ViewData["Title"] = "Create Stock Order";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-cart-plus me-2"></i>Create Stock Order</h5>
+            </div>
+            <div class="card-body p-4">
+
+                @if (Model.LowStockConsumables.Any(c => c.QuantityOnHand <= c.ReorderLevel * 1.1m))
+                {
+                    <div class="alert alert-warning mb-4">
+                        <strong><i class="bi bi-exclamation-triangle me-1"></i>Low / Near Reorder Level:</strong>
+                        @string.Join(", ", Model.LowStockConsumables.Where(c => c.QuantityOnHand <= c.ReorderLevel * 1.1m).Select(c => c.ConsumableName))
+                    </div>
+                }
+
+                <form asp-action="CreateOrder" method="post" id="orderForm">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="OrderNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="OrderNumber" class="form-control" />
+                            <span asp-validation-for="OrderNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="SupplierId" class="form-label fw-semibold">Supplier</label>
+                            <select asp-for="SupplierId" class="form-select"
+                                    asp-items="@(new SelectList(Model.Suppliers,"SupplierId","SupplierName"))">
+                                <option value="">— Select Supplier —</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3">Order Lines <span class="text-muted fw-normal small">(all active consumables are available)</span></h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Consumable</th>
+                                    <th style="width:160px">Qty to Order</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.LowStockConsumables.Count; i++)
+                                {
+                                    var c = Model.LowStockConsumables[i];
+                                    <tr>
+                                        <td>
+                                            @c.ConsumableName
+                                            <small class="text-muted ms-2">(on hand: @c.QuantityOnHand, reorder: @c.ReorderLevel)</small>
+                                            <input type="hidden" name="Lines[@i].ConsumableId" value="@c.ConsumableId" />
+                                            <input type="hidden" name="Lines[@i].ConsumableName" value="@c.ConsumableName" />
+                                        </td>
+                                        <td>
+                                            <input type="number" name="Lines[@i].QuantityOrdered" value="0"
+                                                   min="0" class="form-control form-control-sm" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send me-1"></i>Place Order &amp; Notify Supplier
+                        </button>
+                        <a asp-action="Orders" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,30 @@
+@* ── Views/Admin/CreateAllergyCategory.cshtml ── *@
+@model NMB_HLabSys.Models.Domain.AllergyCategory
+@{
+    ViewData["Title"] = "Add Allergy Category";
+}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add Allergy Category</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="CreateAllergyCategory" method="post">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+                    <div class="mb-4">
+                        <label asp-for="CategoryName" class="form-label fw-semibold"></label>
+                        <input asp-for="CategoryName" class="form-control" placeholder="e.g. Drug" />
+                        <span asp-validation-for="CategoryName" class="text-danger small"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save</button>
+                        <a asp-action="AllergyCategories" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

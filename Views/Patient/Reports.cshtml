@@ -1,0 +1,135 @@
+@model NMB_HLabSys.Models.ViewModels.ReportFilterViewModel
+
+@{
+    ViewData["Title"] = "My Lab Reports";
+}
+
+<div class="container-fluid">
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">@TempData["Error"]</div>
+    }
+
+    <!-- PAGE HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                My Lab Reports
+            </h2>
+
+            <p class="text-muted mb-0">
+                Generate detailed reports of your test results or request history.
+            </p>
+        </div>
+    </div>
+
+
+    <!-- REPORT CARD -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-calendar-range me-2"></i>
+                Select Date Range
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="Report"
+                  asp-action="PatientResultsReport"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+
+                    <!-- FROM DATE -->
+                    <div class="col-md-6">
+
+                        <label asp-for="FromDate"
+                               class="form-label fw-semibold">
+                            From Date
+                        </label>
+
+                        <input asp-for="FromDate"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="FromDate"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+
+                    <!-- TO DATE -->
+                    <div class="col-md-6">
+
+                        <label asp-for="ToDate"
+                               class="form-label fw-semibold">
+                            To Date
+                        </label>
+
+                        <input asp-for="ToDate"
+                               type="date"
+                               class="form-control" />
+
+                        <span asp-validation-for="ToDate"
+                              class="text-danger small">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INFORMATION -->
+                <div class="alert alert-info mt-4">
+
+                    <i class="bi bi-info-circle me-2"></i>
+
+                    Choose a date range, then select the report you want to download.
+
+                </div>
+
+
+                <!-- BUTTON -->
+                <div class="mt-4">
+
+                    <button type="submit" name="reportType" value="results" class="btn btn-danger">
+                        <i class="bi bi-file-earmark-medical me-2"></i>Download Detailed Results
+                    </button>
+                    <button type="submit" name="reportType" value="requests" class="btn btn-outline-primary ms-2">
+                        <i class="bi bi-clipboard2-data me-2"></i>Download Request History
+                    </button>
+
+                    <a asp-controller="Patient"
+                       asp-action="Dashboard"
+                       class="btn btn-outline-secondary ms-2">
+
+                        <i class="bi bi-arrow-left me-2"></i>
+
+                        Back to Dashboard
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

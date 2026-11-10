@@ -1,0 +1,58 @@
+@* ── Views/Manager/EditDoctor.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.DoctorCreateViewModel
+@{
+    ViewData["Title"] = "Edit Doctor";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Edit Doctor</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="EditDoctor" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="doctorId" value="@ViewBag.DoctorId" />
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Surname" class="form-label fw-semibold"></label>
+                            <input asp-for="Surname" class="form-control" />
+                            <span asp-validation-for="Surname" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="HPCSANumber" class="form-label fw-semibold"></label>
+                            <input asp-for="HPCSANumber" class="form-control" />
+                            <span asp-validation-for="HPCSANumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ContactNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactNumber" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" type="email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-1"></i>Save Changes
+                        </button>
+                        <a asp-action="Doctors" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,48 @@
+@* ── Views/Admin/Index.cshtml ── *@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="mb-4">
+    <h3 class="fw-bold mb-0"><i class="bi bi-gear text-primary me-2"></i>Admin Dashboard</h3>
+    <p class="text-muted">Manage reference data used throughout the system</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-sm-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-heart fs-1 text-danger opacity-75"></i>
+                <div>
+                    <div class="fw-bold">Medical Conditions</div>
+                    <a asp-action="ConditionCategories" class="small text-decoration-none me-2">Categories</a>
+                    <a asp-action="Conditions" class="small text-decoration-none">Conditions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-emoji-dizzy fs-1 text-warning opacity-75"></i>
+                <div>
+                    <div class="fw-bold">Allergies</div>
+                    <a asp-action="AllergyCategories" class="small text-decoration-none me-2">Categories</a>
+                    <a asp-action="Allergies" class="small text-decoration-none">Allergies</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-capsule fs-1 text-info opacity-75"></i>
+                <div>
+                    <div class="fw-bold">Medications</div>
+                    <a asp-action="MedicationCategories" class="small text-decoration-none me-2">Categories</a>
+                    <a asp-action="Medications" class="small text-decoration-none">Medications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

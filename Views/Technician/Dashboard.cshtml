@@ -1,0 +1,529 @@
+@model NMB_HLabSys.Models.ViewModels.TechnicianDashboardViewModel
+@{
+    ViewData["Title"] = "Technician Dashboard";
+}
+
+@section Styles {
+    <style>
+        /* ── Hero ─────────────────────────────────────────────── */
+        .tech-hero {
+            background: linear-gradient(125deg, #073b82, #0d6efd);
+            color: #fff;
+            border-radius: 1rem;
+            padding: 1.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            box-shadow: 0 10px 26px rgba(7, 59, 130, .2);
+            margin-bottom: 1.5rem;
+        }
+
+            .tech-hero .eyebrow {
+                font-size: .7rem;
+                text-transform: uppercase;
+                letter-spacing: .09em;
+                font-weight: 700;
+                margin-bottom: .5rem;
+            }
+
+            .tech-hero h1 {
+                font-size: 1.6rem;
+                font-weight: 700;
+                margin-bottom: .35rem;
+            }
+
+            .tech-hero .hero-actions {
+                display: flex;
+                gap: .6rem;
+                flex-wrap: wrap;
+            }
+
+            .tech-hero .btn-hero-outline {
+                color: #fff;
+                border: 1px solid rgba(255,255,255,.7);
+                background: transparent;
+            }
+
+                .tech-hero .btn-hero-outline:hover {
+                    color: #073b82;
+                    background: #fff;
+                    border-color: #fff;
+                }
+
+        /* ── Metric cards ────────────────────────────────────── */
+        .metric-card {
+            background: #fff;
+            color: #212529;
+            border-radius: .8rem;
+            min-height: 120px;
+            padding: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            box-shadow: 0 2px 10px rgba(15, 42, 77, .08);
+            transition: .18s;
+            text-decoration: none;
+            position: relative;
+        }
+
+            .metric-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 18px rgba(15, 42, 77, .15);
+                color: #212529;
+            }
+
+        .metric-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: .7rem;
+            display: grid;
+            place-items: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue { background: #e7f0ff; color: #0d6efd; }
+        .icon-green { background: #e6f6ec; color: #198754; }
+        .icon-amber { background: #fff3dc; color: #b77900; }
+        .icon-red { background: #fee9eb; color: #dc3545; }
+        .icon-purple { background: #f0eaff; color: #6f42c1; }
+
+        .metric-body { flex: 1; min-width: 0; }
+
+        .metric-value {
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .metric-label {
+            display: block;
+            font-size: .8rem;
+            color: #6c757d;
+            margin-top: .2rem;
+        }
+
+        .metric-arrow {
+            color: #9ba8b5;
+            font-size: .9rem;
+            align-self: flex-start;
+        }
+
+        /* ── Alerts banner ────────────────────────────────────── */
+        .alerts-banner {
+            background: #fff8e6;
+            border: 1px solid #ffe69c;
+            border-radius: .7rem;
+            padding: .9rem 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+            .alerts-banner .alert-icon {
+                color: #b77900;
+                font-size: 1.3rem;
+            }
+
+            .alerts-banner .alert-list {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                font-size: .9rem;
+            }
+
+                .alerts-banner .alert-list a {
+                    color: #b77900;
+                    font-weight: 600;
+                    text-decoration: none;
+                }
+
+                    .alerts-banner .alert-list a:hover {
+                        text-decoration: underline;
+                    }
+
+        /* ── Stats summary panel ─────────────────────────────── */
+        .stats-panel {
+            background: #fff;
+            border-radius: .8rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(15, 42, 77, .08);
+        }
+
+            .stats-panel h6 {
+                font-size: .75rem;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: #6c757d;
+                font-weight: 700;
+                margin-bottom: 1rem;
+            }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: .6rem 0;
+            border-bottom: 1px solid #edf0f3;
+            font-size: .92rem;
+        }
+
+            .stat-row:last-child { border-bottom: none; }
+
+            .stat-row .stat-label { color: #6c757d; }
+            .stat-row .stat-value { font-weight: 700; }
+
+                .stat-row .stat-value.danger { color: #dc3545; }
+                .stat-row .stat-value.success { color: #198754; }
+                .stat-row .stat-value.warning { color: #b77900; }
+
+        /* ── Quick link tiles ────────────────────────────────── */
+        .quick-tile {
+            display: flex;
+            align-items: center;
+            gap: .9rem;
+            padding: 1rem 1.2rem;
+            background: #fff;
+            border-radius: .8rem;
+            text-decoration: none;
+            color: #212529;
+            box-shadow: 0 2px 10px rgba(15, 42, 77, .08);
+            transition: .18s;
+            height: 100%;
+        }
+
+            .quick-tile:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 18px rgba(15, 42, 77, .15);
+                color: #073b82;
+            }
+
+            .quick-tile .qt-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: .55rem;
+                display: grid;
+                place-items: center;
+                font-size: 1.15rem;
+                flex-shrink: 0;
+            }
+
+            .quick-tile .qt-body { flex: 1; min-width: 0; }
+
+            .quick-tile .qt-title {
+                font-weight: 600;
+                font-size: .95rem;
+                line-height: 1.2;
+                margin-bottom: .1rem;
+            }
+
+            .quick-tile .qt-sub {
+                font-size: .78rem;
+                color: #6c757d;
+            }
+
+        /* ── Responsive ──────────────────────────────────────── */
+        @@media (max-width: 767.98px) {
+            .tech-hero {
+                padding: 1.4rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+                .tech-hero h1 { font-size: 1.3rem; }
+
+                .tech-hero .hero-actions { width: 100%; }
+
+                    .tech-hero .hero-actions .btn { flex: 1; }
+        }
+    </style>
+}
+
+@* ═══════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════ *@
+<section class="tech-hero">
+    <div>
+        <p class="eyebrow"><i class="bi bi-eyedropper me-1"></i>Laboratory technician</p>
+        <h1>Good day, @Model.Technician.Name @Model.Technician.Surname.</h1>
+        <p class="mb-0 opacity-75">Your live workload at a glance — @DateTime.Now.ToString("dddd, dd MMM yyyy").</p>
+    </div>
+    <div class="hero-actions">
+        <a asp-action="ReceiveSamples" class="btn btn-light">
+            <i class="bi bi-droplet me-1"></i>Receive Samples
+        </a>
+        <a asp-action="Consumables" class="btn btn-hero-outline">
+            <i class="bi bi-box-seam me-1"></i>Consumables
+        </a>
+        <a asp-action="Reports" class="btn btn-hero-outline">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Reports
+        </a>
+    </div>
+</section>
+
+@* ═══════════════════════════════════════════════════════════════
+   TEMPDATA BANNERS
+   ═══════════════════════════════════════════════════════════════ *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* ═══════════════════════════════════════════════════════════════
+   ALERTS BANNER (only if something needs attention)
+   ═══════════════════════════════════════════════════════════════ *@
+@if (Model.HasAnyAlert)
+{
+    <div class="alerts-banner">
+        <i class="bi bi-bell-fill alert-icon"></i>
+        <ul class="alert-list">
+            @if (Model.OverdueCount > 0)
+            {
+                <li>
+                    <a asp-action="WorkBench" asp-route-status="InProgress">
+                        <i class="bi bi-exclamation-octagon me-1"></i>@Model.OverdueCount overdue
+                    </a>
+                </li>
+            }
+            @if (Model.CriticalDueCount > 0)
+            {
+                <li>
+                    <a asp-action="WorkBench" asp-route-status="InProgress">
+                        <i class="bi bi-alarm me-1"></i>@Model.CriticalDueCount critical (≤15 min)
+                    </a>
+                </li>
+            }
+            @if (Model.OutOfStockCount > 0)
+            {
+                <li>
+                    <a asp-action="Consumables" asp-route-status="Out">
+                        <i class="bi bi-box-seam me-1"></i>@Model.OutOfStockCount out of stock
+                    </a>
+                </li>
+            }
+            @if (Model.ReadyToStart.Any(x => string.Equals(x.Urgency, "Stat", StringComparison.OrdinalIgnoreCase)))
+            {
+                <li>
+                    <a asp-action="TestReadyToStart" asp-route-urgency="Stat">
+                        <i class="bi bi-lightning-charge me-1"></i>STAT waiting to start
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@* ═══════════════════════════════════════════════════════════════
+   METRIC CARDS — 4 primary workload cards
+   ═══════════════════════════════════════════════════════════════ *@
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="WorkBench" asp-route-status="InProgress" class="metric-card">
+            <span class="metric-icon icon-blue"><i class="bi bi-hourglass-split"></i></span>
+            <span class="metric-body">
+                <span class="metric-value">@Model.InProgressCount</span>
+                <span class="metric-label">Tests in progress</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="TestReadyToStart" class="metric-card">
+            <span class="metric-icon icon-green"><i class="bi bi-play-circle"></i></span>
+            <span class="metric-body">
+                <span class="metric-value">@Model.ReadyToStartCount</span>
+                <span class="metric-label">Waiting to start</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="WorkBench" asp-route-status="Completed" class="metric-card">
+            <span class="metric-icon icon-amber"><i class="bi bi-patch-check"></i></span>
+            <span class="metric-body">
+                <span class="metric-value">@Model.AwaitingVerificationCount</span>
+                <span class="metric-label">Awaiting verification</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a asp-action="TestSentBack" class="metric-card">
+            <span class="metric-icon @(Model.ToReviewCount > 0 ? "icon-red" : "icon-green")">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </span>
+            <span class="metric-body">
+                <span class="metric-value">@Model.ToReviewCount</span>
+                <span class="metric-label">Returned for review</span>
+            </span>
+            <i class="bi bi-arrow-up-right metric-arrow"></i>
+        </a>
+    </div>
+</div>
+
+@* ═══════════════════════════════════════════════════════════════
+   SECONDARY STATS — Today's summary + quick links
+   ═══════════════════════════════════════════════════════════════ *@
+<div class="row g-3 mb-4">
+    @* Left: Today's summary panel *@
+    <div class="col-lg-5">
+        <div class="stats-panel h-100">
+            <h6><i class="bi bi-calendar-check me-1"></i>Today's summary</h6>
+
+            <div class="stat-row">
+                <span class="stat-label">Verified by me today</span>
+                <span class="stat-value success">@Model.VerifiedTodayCount</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Pending samples to receive</span>
+                <span class="stat-value @(Model.PendingSamplesCount > 0 ? "warning" : "")">@Model.PendingSamplesCount</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Consumables below reorder level</span>
+                <span class="stat-value @(Model.LowStockCount > 0 ? "warning" : "success")">@Model.LowStockCount</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Consumables out of stock</span>
+                <span class="stat-value @(Model.OutOfStockCount > 0 ? "danger" : "success")">@Model.OutOfStockCount</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Tests verified (last 30 days)</span>
+                <span class="stat-value">@Model.VerifiedHistory.Count</span>
+            </div>
+        </div>
+    </div>
+
+    @* Right: quick links *@
+    <div class="col-lg-7">
+        <div class="row g-3 h-100">
+            <div class="col-sm-6">
+                <a asp-action="WorkBench" class="quick-tile">
+                    <span class="qt-icon icon-purple"><i class="bi bi-columns-gap"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">My Work Bench</span>
+                        <span class="qt-sub">All tests assigned to me</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="TestRequests" class="quick-tile">
+                    <span class="qt-icon icon-blue"><i class="bi bi-clipboard2-pulse"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">Test Requests</span>
+                        <span class="qt-sub">Every request on my name</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="ReceiveSamples" class="quick-tile">
+                    <span class="qt-icon icon-amber"><i class="bi bi-upc-scan"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">Sample Verification</span>
+                        <span class="qt-sub">Barcode-verified reception</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="States" class="quick-tile">
+                    <span class="qt-icon icon-green"><i class="bi bi-bar-chart-steps"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">My States</span>
+                        <span class="qt-sub">Summary stats &amp; performance</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+
+            @* ═══ NEW Phase 2–3 tiles ═══ *@
+            <div class="col-sm-6">
+                <a asp-action="RequestConsumable" class="quick-tile">
+                    <span class="qt-icon icon-blue"><i class="bi bi-cart-plus"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">Request Consumables</span>
+                        <span class="qt-sub">Submit a stock request to the Lab Manager</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="MySupplyRequests" class="quick-tile">
+                    <span class="qt-icon icon-purple"><i class="bi bi-clipboard-check"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">My Supply Requests</span>
+                        <span class="qt-sub">Approval status of my stock requests</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="UsageHistory" class="quick-tile">
+                    <span class="qt-icon icon-amber"><i class="bi bi-clock-history"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">Usage History</span>
+                        <span class="qt-sub">Consumables I've used while testing</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+            <div class="col-sm-6">
+                <a asp-action="ReportStockProblem" class="quick-tile">
+                    <span class="qt-icon icon-red"><i class="bi bi-exclamation-triangle"></i></span>
+                    <span class="qt-body">
+                        <span class="qt-title">Report Stock Problem</span>
+                        <span class="qt-sub">Flag damaged, expired, or missing items</span>
+                    </span>
+                    <i class="bi bi-chevron-right text-muted"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ═══════════════════════════════════════════════════════════════
+   CONSUMABLE ALERT CARD (only if there are problems)
+   ═══════════════════════════════════════════════════════════════ *@
+@if (Model.LowStockCount > 0 || Model.OutOfStockCount > 0)
+{
+    <div class="card shadow-sm mb-4 @(Model.OutOfStockCount > 0 ? "border-danger" : "border-warning")">
+        <div class="card-body d-flex align-items-center gap-3 flex-wrap">
+            <i class="bi @(Model.OutOfStockCount > 0 ? "bi-x-octagon-fill text-danger" : "bi-exclamation-triangle-fill text-warning") fs-2"></i>
+            <div class="flex-grow-1">
+                <div class="fw-semibold mb-1">Consumable stock needs attention</div>
+                <div class="text-muted small">
+                    @if (Model.OutOfStockCount > 0)
+                    {
+                        <span class="text-danger fw-semibold">@Model.OutOfStockCount out of stock</span>
+                        <span> · </span>
+                    }
+                    <span>@Model.LowStockCount below reorder level</span>
+                </div>
+            </div>
+            <a asp-action="Consumables" class="btn btn-warning">
+                <i class="bi bi-box-seam me-1"></i>Manage Consumables
+            </a>
+            <a asp-action="RequestConsumable" class="btn btn-outline-primary">
+                <i class="bi bi-cart-plus me-1"></i>Request Stock
+            </a>
+        </div>
+    </div>
+}

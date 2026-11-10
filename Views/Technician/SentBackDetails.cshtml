@@ -1,0 +1,277 @@
+﻿@model NMB_HLabSys.Models.ViewModels.SentBackDetailsViewModel
+@{
+    ViewData["Title"] = "Sent-Back Details";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-arrow-counterclockwise text-danger me-2"></i>Sent-Back Test Details</h3>
+        <div class="text-muted">Request @Model.RequestNumber · @Model.TestName · @Model.CategoryName</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* SENT-BACK REASON BANNER *@
+@if (!string.IsNullOrWhiteSpace(Model.SentBackNote))
+{
+    <div class="alert alert-danger border-danger shadow-sm mb-4">
+        <div class="d-flex align-items-start gap-3">
+            <i class="bi bi-exclamation-octagon-fill fs-3"></i>
+            <div class="flex-grow-1">
+                <div class="fw-bold mb-1">This test was returned for review</div>
+                <div class="small mb-2">
+                    By <strong>@(Model.SentBackByName ?? "—")</strong>
+                    @if (Model.SentBackById.HasValue)
+                    {
+                        <a asp-action="TechnicianDetails" asp-route-technicianId="@Model.SentBackById.Value"
+                           class="ms-1 btn btn-sm btn-outline-dark py-0 px-1" title="View details">
+                            <i class="bi bi-person-gear"></i>
+                        </a>
+                    }
+                    on @(Model.SentBackAt?.ToString("dd MMM yyyy HH:mm") ?? "—")
+                </div>
+                <div class="bg-white border rounded p-2 fst-italic">
+                    &ldquo;@Model.SentBackNote&rdquo;
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-3">
+    @* LEFT COLUMN — Test + Result *@
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-clipboard-pulse me-2"></i>Test & Result</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Test</strong>
+                        <div>@Model.TestName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Category</strong>
+                        <div>@Model.CategoryName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Status</strong>
+                        <div>
+                            <span class="badge @(Model.Status == "ToBeReviewed" ? "bg-danger" : "bg-primary")">@Model.Status</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Urgency</strong>
+                        <div>
+                            <span class="badge @(Model.Urgency == "Stat" ? "bg-danger" : Model.Urgency == "Urgent" ? "bg-warning text-dark" : "bg-secondary")">
+                                @Model.Urgency
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <hr class="my-1" />
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Result</strong>
+                        <div class="fs-4 fw-bold @(Model.IsAbnormal ? "text-danger" : "")">
+                            @(Model.ResultValue?.ToString("F2") ?? "—") @Model.Units
+                            @if (Model.IsAbnormal)
+                            {
+                                <span class="badge bg-danger ms-2">ABNORMAL</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Normal range</strong>
+                        <div>@(Model.NormalRangeMin?.ToString("F2") ?? "—") – @(Model.NormalRangeMax?.ToString("F2") ?? "—") @Model.Units</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.ResultNotes))
+                    {
+                        <div class="col-12">
+                            <strong>Result notes</strong>
+                            <div class="text-muted fst-italic">@Model.ResultNotes</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ACTION BUTTONS *@
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-tools me-2"></i>Actions</div>
+            <div class="card-body">
+                @if (Model.Status == "ToBeReviewed")
+                {
+                    <form asp-action="ResendForVerification" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="requestTestId" value="@Model.RequestTestId" />
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-arrow-repeat me-1"></i>Re-send for verification
+                        </button>
+                    </form>
+                    <span class="text-muted small ms-2">
+                        Move this test back to the verify queue. Another technician will review it again.
+                    </span>
+                }
+                else if (Model.Status == "Completed" && Model.CanVerifyResult)
+                {
+                    <a asp-action="VerifyResult" asp-route-requestTestId="@Model.RequestTestId" class="btn btn-success">
+                        <i class="bi bi-patch-check me-1"></i>Verify this result
+                    </a>
+                }
+                else if (Model.Status == "Completed")
+                {
+                    <span class="text-muted small">The technician who performed this result cannot verify it.</span>
+                }
+                else
+                {
+                    <span class="text-muted">No actions available for status &ldquo;@Model.Status&rdquo;.</span>
+                }
+            </div>
+        </div>
+
+        @* ADD NOTE *@
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-journal-plus me-2"></i>Add a note</div>
+            <div class="card-body">
+                <form asp-action="AddReviewNote" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="requestTestId" value="@Model.RequestTestId" />
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea name="note" class="form-control" rows="3"
+                                  placeholder="Add your own note for the history, e.g. &quot;Recalculated, will re-send.&quot;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="bi bi-save me-1"></i>Save note
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @* HISTORY TIMELINE *@
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold">
+                <i class="bi bi-clock-history me-2"></i>Full test history
+                <span class="badge bg-secondary ms-2">@Model.History.Count</span>
+            </div>
+            <div class="card-body">
+                @if (Model.History.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var h in Model.History)
+                        {
+                            var badgeClass = h.Action switch
+                            {
+                                "Captured" => "bg-primary",
+                                "Verified" => "bg-success",
+                                "ReturnedForReview" => "bg-danger",
+                                "Resubmitted" => "bg-warning text-dark",
+                                "ResentForVerification" => "bg-info text-dark",
+                                "NoteAdded" => "bg-secondary",
+                                "SampleEdited" => "bg-dark",
+                                _ => "bg-light text-dark"
+                            };
+                            <div class="border-start border-3 ps-3 pb-3 @(h == Model.History.Last() ? "border-0" : "")" style="border-color: #dee2e6 !important;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge @badgeClass">@h.Action</span>
+                                        <span class="small text-muted ms-2">@h.ActionDate.ToString("dd MMM yyyy HH:mm")</span>
+                                    </div>
+                                    <div class="small text-muted">@(h.ActionByName ?? "—")</div>
+                                </div>
+                                @if (h.ResultValue.HasValue)
+                                {
+                                    <div class="small mt-1">
+                                        <strong>Result:</strong> @h.ResultValue.Value.ToString("F2") @Model.Units
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(h.Notes))
+                                {
+                                    <div class="small mt-1 fst-italic text-muted">@h.Notes</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">No history recorded yet.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* RIGHT COLUMN — Patient + Technicians *@
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-person-badge me-2"></i>Patient</div>
+            <div class="card-body">
+                <div class="fw-semibold">@Model.PatientName</div>
+                @if (Model.PatientDateOfBirth.HasValue)
+                {
+                    <div class="small text-muted">
+                        DOB: @Model.PatientDateOfBirth.Value.ToString("dd MMM yyyy")
+                        @if (Model.PatientAge.HasValue)
+                        {
+                            <span>· @Model.PatientAge years</span>
+                        }
+                    </div>
+                }
+                <a asp-action="PatientDetails" asp-route-patientId="@Model.PatientId"
+                   class="btn btn-sm btn-outline-info mt-2">
+                    <i class="bi bi-person-badge me-1"></i>Full patient details
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-header fw-semibold"><i class="bi bi-person-gear me-2"></i>Performing technician</div>
+            <div class="card-body">
+                <div class="fw-semibold">@(Model.PerformingTechnicianName ?? "—")</div>
+                @if (Model.PerformingTechnicianId.HasValue)
+                {
+                    <a asp-action="TechnicianDetails" asp-route-technicianId="@Model.PerformingTechnicianId.Value"
+                       class="btn btn-sm btn-outline-success mt-2">
+                        <i class="bi bi-person-gear me-1"></i>Full technician details
+                    </a>
+                }
+            </div>
+        </div>
+
+        @if (Model.SentBackById.HasValue)
+        {
+            <div class="card shadow-sm mb-3 border-danger">
+                <div class="card-header fw-semibold text-danger"><i class="bi bi-arrow-return-left me-2"></i>Sent back by</div>
+                <div class="card-body">
+                    <div class="fw-semibold">@(Model.SentBackByName ?? "—")</div>
+                    <div class="small text-muted">
+                        On @(Model.SentBackAt?.ToString("dd MMM yyyy HH:mm") ?? "—")
+                    </div>
+                    <a asp-action="TechnicianDetails" asp-route-technicianId="@Model.SentBackById.Value"
+                       class="btn btn-sm btn-outline-danger mt-2">
+                        <i class="bi bi-person-gear me-1"></i>Full technician details
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

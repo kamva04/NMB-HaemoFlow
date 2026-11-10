@@ -1,0 +1,128 @@
+@model NMB_HLabSys.Models.ViewModels.PatientMedicalHistoryViewModel
+@{
+    ViewData["Title"] = "My Medical History";
+}
+
+<div class="mb-4">
+    <h4 class="fw-bold mb-0"><i class="bi bi-heart-pulse text-danger me-2"></i>My Medical History</h4>
+    <p class="text-muted">Review your recorded conditions, allergies, and medications. You can add, edit, or archive entries.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center fw-semibold text-danger">
+                <span><i class="bi bi-heart me-2"></i>Chronic Conditions</span>
+                <a asp-action="EditMedicalHistory" asp-route-type="condition" class="btn btn-sm btn-outline-danger">Add</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var entry in Model.Conditions)
+                {
+                    <li class="list-group-item small d-flex justify-content-between align-items-center gap-2">
+                        <span>
+                            <i class="bi bi-dot me-1 text-danger"></i>@entry.Condition?.ConditionName
+                            @if (!entry.IsActive) { <span class="badge bg-secondary ms-1">Archived</span> }
+                        </span>
+                        @if (entry.IsActive)
+                        {
+                            <span class="text-nowrap">
+                                <a asp-action="EditMedicalHistory" asp-route-type="condition" asp-route-id="@entry.ConditionId"
+                                   class="btn btn-sm btn-outline-primary" aria-label="Edit condition">Edit</a>
+                                <form asp-action="ArchiveMedicalHistory" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="type" value="condition" />
+                                    <input type="hidden" name="id" value="@entry.ConditionId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                                </form>
+                            </span>
+                        }
+                    </li>
+                }
+                @if (!Model.Conditions.Any())
+                {
+                    <li class="list-group-item text-muted small">No conditions recorded.</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center fw-semibold text-warning">
+                <span><i class="bi bi-emoji-dizzy me-2"></i>Allergies</span>
+                <a asp-action="EditMedicalHistory" asp-route-type="allergy" class="btn btn-sm btn-outline-warning">Add</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var entry in Model.Allergies)
+                {
+                    <li class="list-group-item small d-flex justify-content-between align-items-center gap-2">
+                        <span>
+                            <i class="bi bi-dot me-1 text-warning"></i>@entry.Allergy?.AllergyName
+                            @if (!entry.IsActive) { <span class="badge bg-secondary ms-1">Archived</span> }
+                        </span>
+                        @if (entry.IsActive)
+                        {
+                            <span class="text-nowrap">
+                                <a asp-action="EditMedicalHistory" asp-route-type="allergy" asp-route-id="@entry.AllergyId"
+                                   class="btn btn-sm btn-outline-primary" aria-label="Edit allergy">Edit</a>
+                                <form asp-action="ArchiveMedicalHistory" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="type" value="allergy" />
+                                    <input type="hidden" name="id" value="@entry.AllergyId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                                </form>
+                            </span>
+                        }
+                    </li>
+                }
+                @if (!Model.Allergies.Any())
+                {
+                    <li class="list-group-item text-muted small">No allergies recorded.</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center fw-semibold text-info">
+                <span><i class="bi bi-capsule me-2"></i>Current Medication</span>
+                <a asp-action="EditMedicalHistory" asp-route-type="medication" class="btn btn-sm btn-outline-info">Add</a>
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var entry in Model.Medications)
+                {
+                    <li class="list-group-item small d-flex justify-content-between align-items-center gap-2">
+                        <span>
+                            <i class="bi bi-dot me-1 text-info"></i>@entry.Medication?.MedicationName
+                            @if (!entry.IsActive) { <span class="badge bg-secondary ms-1">Archived</span> }
+                        </span>
+                        @if (entry.IsActive)
+                        {
+                            <span class="text-nowrap">
+                                <a asp-action="EditMedicalHistory" asp-route-type="medication" asp-route-id="@entry.MedicationId"
+                                   class="btn btn-sm btn-outline-primary" aria-label="Edit medication">Edit</a>
+                                <form asp-action="ArchiveMedicalHistory" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="type" value="medication" />
+                                    <input type="hidden" name="id" value="@entry.MedicationId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                                </form>
+                            </span>
+                        }
+                    </li>
+                }
+                @if (!Model.Medications.Any())
+                {
+                    <li class="list-group-item text-muted small">No medications recorded.</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>

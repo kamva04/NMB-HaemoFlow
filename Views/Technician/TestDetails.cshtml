@@ -1,0 +1,226 @@
+@model NMB_HLabSys.Models.ViewModels.TechnicianTestDetailsViewModel
+@{
+    ViewData["Title"] = "Test Details";
+    var overdue = Model.DueAt.HasValue && Model.DueAt.Value < DateTime.Now && Model.Status == "InProgress";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-1"><i class="bi bi-file-medical text-primary me-2"></i>@Model.TestName</h4>
+        <div class="text-muted">Request @Model.RequestNumber · @Model.CategoryName</div>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+@if (overdue)
+{
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>OVERDUE:</strong> This test has passed its expected turnaround time.
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold">Test / Request Information</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>Patient</strong>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span>@Model.PatientName</span>
+                            <a asp-action="PatientDetails" asp-route-patientId="@Model.PatientId"
+                               class="btn btn-sm btn-outline-info" title="View full patient details">
+                                <i class="bi bi-person-badge me-1"></i>Full details
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3"><strong>Age</strong><div>@Model.PatientAge</div></div>
+                    <div class="col-md-3">
+                        <strong>Urgency</strong>
+                        <div>
+                            <span class="badge @(Model.Urgency == "Stat" ? "bg-danger" : Model.Urgency == "Urgent" ? "bg-warning text-dark" : "bg-secondary")">@Model.Urgency</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6"><strong>Sample type</strong><div>@Model.SampleType</div></div>
+                    <div class="col-md-6"><strong>Turnaround</strong><div>@Model.TurnaroundMinutes minutes</div></div>
+                    <div class="col-md-6"><strong>Started</strong><div>@(Model.StartedAt?.ToString("dd MMM yyyy HH:mm") ?? "Not started")</div></div>
+                    <div class="col-md-6"><strong>Expected completion</strong><div>@(Model.DueAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</div></div>
+                    <div class="col-md-6"><strong>Status</strong><div><span class="badge bg-primary">@Model.Status</span></div></div>
+                    <div class="col-md-6">
+                        <strong>Normal range</strong>
+                        <div>@(Model.NormalRangeMin?.ToString("F2") ?? "—") – @(Model.NormalRangeMax?.ToString("F2") ?? "—") @Model.Units</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-journal-text me-2"></i>Doctor Clinical Notes</span>
+                <a asp-action="DoctorDetails" asp-route-doctorId="@Model.DoctorId"
+                   class="btn btn-sm btn-outline-primary" title="View full doctor details">
+                    <i class="bi bi-person-vcard me-1"></i>Full doctor details
+                </a>
+            </div>
+            <div class="card-body">
+                @(string.IsNullOrWhiteSpace(Model.ClinicalNotes) ? "No clinical notes provided." : Model.ClinicalNotes)
+            </div>
+        </div>
+
+        @* ======================== SAMPLES + BARCODE ======================== *@
+        <div class="card shadow-sm">
+            <div class="card-header fw-semibold"><i class="bi bi-droplet me-2"></i>Samples</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Type</th>
+                            <th>Received</th>
+                            <th>Received by</th>
+                            <th class="text-end">Label</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model.Samples)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@Url.Action("BarcodePreview", "Technician", new { value = s.Barcode })"
+                                         alt="@s.Barcode" class="barcode-img" loading="lazy" />
+                                    <div class="font-monospace small text-muted mt-1">@s.Barcode</div>
+                                </td>
+                                <td>@s.SampleType</td>
+                                <td>@(s.ReceivedAt?.ToString("dd MMM yyyy HH:mm") ?? "Not received")</td>
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(s.ReceivedBy))
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                    else if (s.ReceivedById.HasValue)
+                                    {
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span>@s.ReceivedBy</span>
+                                            <a asp-action="TechnicianDetails" asp-route-technicianId="@s.ReceivedById.Value"
+                                               class="btn btn-sm btn-outline-success" title="View technician details">
+                                                <i class="bi bi-person-gear me-1"></i>Details
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span>@s.ReceivedBy</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="PrintBarcode" asp-route-sampleId="@s.SampleId"
+                                       target="_blank" rel="noopener"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-printer me-1"></i>Print label
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold text-danger"><i class="bi bi-heart-pulse me-2"></i>Medical Conditions</div>
+            <div class="card-body">
+                @if (Model.Conditions.Any())
+                {
+                    <ul class="mb-0">
+                        @foreach (var x in Model.Conditions)
+                        {
+                            <li>@x.ConditionName</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="text-muted">None recorded.</span>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold text-warning"><i class="bi bi-exclamation-circle me-2"></i>Allergies</div>
+            <div class="card-body">
+                @if (Model.Allergies.Any())
+                {
+                    <ul class="mb-0">
+                        @foreach (var x in Model.Allergies)
+                        {
+                            <li>@x.AllergyName</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="text-muted">None recorded.</span>
+                }
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-semibold text-primary"><i class="bi bi-capsule me-2"></i>Current Medication</div>
+            <div class="card-body">
+                @if (Model.Medications.Any())
+                {
+                    <ul class="mb-0">
+                        @foreach (var x in Model.Medications)
+                        {
+                            <li>@x.MedicationName</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="text-muted">None recorded.</span>
+                }
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            @if (Model.Status == "InProgress" || Model.Status == "ToBeReviewed")
+            {
+                <a asp-action="CaptureResult" asp-route-requestTestId="@Model.RequestTestId" class="btn btn-success">
+                    <i class="bi bi-pencil-square me-1"></i>Capture Result
+                </a>
+            }
+            @if (Model.Status == "Completed" && Model.CanVerifyResult)
+            {
+                <a asp-action="VerifyResult" asp-route-requestTestId="@Model.RequestTestId" class="btn btn-warning">
+                    <i class="bi bi-patch-check me-1"></i>Verify Result
+                </a>
+            }
+            else if (Model.Status == "Completed")
+            {
+                <span class="text-muted small">The technician who performed this result cannot verify it.</span>
+            }
+            <a asp-action="ResultHistory" asp-route-requestTestId="@Model.RequestTestId" class="btn btn-outline-secondary">
+                <i class="bi bi-clock-history me-1"></i>View Full Result History
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .barcode-img {
+            max-height: 60px;
+            width: auto;
+            background: #fff;
+            padding: 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+    </style>
+}

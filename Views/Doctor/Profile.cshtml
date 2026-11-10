@@ -1,0 +1,89 @@
+﻿@model NMB_HLabSys.Models.ViewModels.DoctorProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">My Profile</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <strong>Account Details</strong>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="Doctor" asp-action="EditProfile" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="DoctorId" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">Name</label>
+                                <input type="text" class="form-control" value="Dr @Model.Name @Model.Surname" disabled readonly />
+                                <div class="form-text">Managed by the Laboratory Manager.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted">HPCSA Number</label>
+                                <input type="text" class="form-control" value="@Model.HPCSANumber" disabled readonly />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted">E-mail (username)</label>
+                            <input type="email" class="form-control" value="@Model.Email" disabled readonly />
+                            <div class="form-text">Contact the Laboratory Manager to change your e-mail address.</div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="mb-3">
+                            <label asp-for="ContactNumber" class="form-label">Contact Number</label>
+                            <input asp-for="ContactNumber" class="form-control" placeholder="e.g. 041 123 4567" />
+                            <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <strong>Security</strong>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Change the password you use to sign in.</p>
+                    <a asp-controller="Doctor" asp-action="ChangePassword" class="btn btn-outline-secondary w-100">
+                        Change Password
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

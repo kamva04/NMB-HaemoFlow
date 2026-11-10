@@ -1,0 +1,109 @@
+﻿@{
+    Layout = null;
+    dynamic vm = Model;
+    string barcode     = vm.BarcodeDataUrl ?? "";
+    string systemName  = vm.SystemName  ?? "NMB-HLabSys";
+    string requestNo   = vm.RequestNumber ?? "";
+    string patientName = vm.PatientName ?? "";
+    string sampleType  = vm.SampleTypeName ?? "";
+    string barcodeText = (string)(vm.Sample.Barcode ?? "");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Barcode — @requestNo</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 24px;
+            color: #073b82;
+        }
+        .label {
+            width: 340px;
+            padding: 16px 18px;
+            border: 2px solid #073b82;
+            border-radius: 12px;
+            text-align: center;
+            background: #fff;
+        }
+        .label h1 {
+            font-size: 14px;
+            margin: 0 0 6px;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+        .label .rule {
+            height: 2px;
+            background: linear-gradient(90deg, #073b82 0%, #0d6efd 100%);
+            margin: 4px 0 10px;
+            border-radius: 2px;
+        }
+        .label img {
+            width: 100%;
+            max-height: 90px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        .label .barcode-text {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            margin-top: 4px;
+            letter-spacing: .08em;
+        }
+        .label .meta {
+            font-size: 12px;
+            margin-top: 10px;
+            line-height: 1.5;
+            text-align: left;
+        }
+        .label .meta strong { color: #073b82; }
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #073b82;
+            background: #073b82;
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn.ghost {
+            background: transparent;
+            color: #073b82;
+        }
+        @@media print {
+            body { padding: 0; }
+            .actions { display: none; }
+            .label { border-color: #073b82; page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="label">
+        <h1>@systemName</h1>
+        <div class="rule"></div>
+        <img src="@barcode" alt="barcode" />
+        <div class="barcode-text">@barcodeText</div>
+        <div class="meta">
+            <div><strong>Request:</strong> @requestNo</div>
+            <div><strong>Patient:</strong> @patientName</div>
+            <div><strong>Sample:</strong> @sampleType</div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn" onclick="window.print()">
+            <i>🖨</i> Print Label
+        </button>
+        <button class="btn ghost" onclick="window.close()">Close</button>
+    </div>
+</body>
+</html>

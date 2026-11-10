@@ -1,0 +1,344 @@
+﻿@using Microsoft.AspNetCore.Http
+@using NMB_HLabSys.Data
+@using Microsoft.EntityFrameworkCore
+@using System.Linq
+@inject ApplicationDbContext Db
+
+@{
+    var role = Context.Session.GetString("Role") ?? string.Empty;
+    var currentPath = Context.Request.Path.Value?.ToLower() ?? string.Empty;
+    Func<string, string> active = (path) =>
+        currentPath.Contains(path.ToLower()) ? "active" : string.Empty;
+
+    // Technician profile card data
+    string? techFullName = null;
+    string? techEmployeeNumber = null;
+    string? techProfilePicture = null;
+
+    if (role == "Technician")
+    {
+        var techUserId = Context.Session.GetInt32("UserId");
+        if (techUserId.HasValue)
+        {
+            var tech = Db.Technicians
+                .AsNoTracking()
+                .Where(t => t.UserId == techUserId.Value)
+                .Select(t => new { t.Name, t.Surname, t.EmployeeNumber, t.ProfilePicturePath })
+                .FirstOrDefault();
+
+            if (tech != null)
+            {
+                techFullName = tech.Name + " " + tech.Surname;
+                techEmployeeNumber = tech.EmployeeNumber;
+                techProfilePicture = tech.ProfilePicturePath;
+            }
+        }
+    }
+}
+
+@if (role == "Manager")
+{
+    <div class="sidebar-heading">Manager</div>
+    <nav class="nav flex-column">
+        <a class="nav-link @active("/manager/index")" asp-controller="Manager" asp-action="Index">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+        <a class="nav-link @active("/manager/profile")" asp-controller="Manager" asp-action="Profile">
+            <i class="bi bi-person-circle me-2"></i>My Profile
+        </a>
+
+        <div class="sidebar-heading mt-2">Operations</div>
+        <a class="nav-link @active("/manager/supplyrequests")" asp-controller="Manager" asp-action="SupplyRequests">
+            <i class="bi bi-cart-check me-2"></i>Supply Requests
+        </a>
+        <a class="nav-link @active("/manager/stockproblems")" asp-controller="Manager" asp-action="StockProblems">
+            <i class="bi bi-exclamation-triangle me-2"></i>Stock Problems
+        </a>
+
+        <div class="sidebar-heading mt-2">Test Management</div>
+        <a class="nav-link @active("/manager/categories")" asp-controller="Manager" asp-action="Categories">
+            <i class="bi bi-tags me-2"></i>Test Categories
+        </a>
+        <a class="nav-link @active("/manager/testtypes")" asp-controller="Manager" asp-action="TestTypes">
+            <i class="bi bi-clipboard2-pulse me-2"></i>Test Types
+        </a>
+        <a class="nav-link @active("/manager/sampletypes")" asp-controller="Manager" asp-action="SampleTypes">
+            <i class="bi bi-droplet-half me-2"></i>Sample Types
+        </a>
+
+        <div class="sidebar-heading mt-2">Stock</div>
+        <a class="nav-link @active("/manager/consumables")" asp-controller="Manager" asp-action="Consumables">
+            <i class="bi bi-box-seam me-2"></i>Consumables
+        </a>
+        <a class="nav-link @active("/manager/suppliers")" asp-controller="Manager" asp-action="Suppliers">
+            <i class="bi bi-truck me-2"></i>Suppliers
+        </a>
+        <a class="nav-link @active("/manager/orders")" asp-controller="Manager" asp-action="Orders">
+            <i class="bi bi-cart3 me-2"></i>Stock Orders
+        </a>
+
+        <div class="sidebar-heading mt-2">Users</div>
+        <a class="nav-link @active("/manager/doctors")" asp-controller="Manager" asp-action="Doctors">
+            <i class="bi bi-person-badge me-2"></i>Doctors
+        </a>
+        <a class="nav-link @active("/manager/technicians")" asp-controller="Manager" asp-action="Technicians">
+            <i class="bi bi-person-gear me-2"></i>Technicians
+        </a>
+
+        <div class="sidebar-heading mt-2">Other</div>
+        <a class="nav-link @active("/manager/reports")" asp-controller="Manager" asp-action="Reports">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>Reports
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangeEmail">
+            <i class="bi bi-envelope me-2"></i>Change Email
+        </a>
+    </nav>
+}
+else if (role == "Doctor")
+{
+    <div class="sidebar-heading">Doctor</div>
+    <nav class="nav flex-column">
+        <a class="nav-link @active("/doctor/index")" asp-controller="Doctor" asp-action="Index">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+        <a class="nav-link @active("/doctor/patients")" asp-controller="Doctor" asp-action="Patients">
+            <i class="bi bi-people me-2"></i>Patients
+        </a>
+        <a class="nav-link @active("/doctor/findpatientforrequest")" asp-controller="Doctor" asp-action="FindPatientForRequest">
+            <i class="bi bi-clipboard2-plus me-2"></i>New Test Request
+        </a>
+        <a class="nav-link @active("/doctor/trackrequests")" asp-controller="Doctor" asp-action="TrackRequests">
+            <i class="bi bi-list-check me-2"></i>Track Requests
+        </a>
+        <a class="nav-link @active("/doctor/alerts")" asp-controller="Doctor" asp-action="Alerts">
+            <i class="bi bi-bell me-2"></i>Abnormal Alerts
+        </a>
+        <a class="nav-link @active("/doctor/reports")" asp-controller="Doctor" asp-action="Reports">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>Reports
+        </a>
+        <div class="sidebar-heading mt-2">Account</div>
+        <a class="nav-link @active("/doctor/profile")" asp-controller="Doctor" asp-action="Profile">
+            <i class="bi bi-person-circle me-2"></i>My Profile
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangeEmail">
+            <i class="bi bi-envelope me-2"></i>Change Email
+        </a>
+    </nav>
+}
+else if (role == "Technician")
+{
+    @* ─── Technician Profile Card ─── *@
+    <div class="tech-profile-card">
+        @if (!string.IsNullOrWhiteSpace(techProfilePicture))
+        {
+            <img src="@techProfilePicture" alt="Profile picture" class="tech-avatar" />
+        }
+        else
+        {
+            <div class="tech-avatar tech-avatar-placeholder">
+                <i class="bi bi-person-fill"></i>
+            </div>
+        }
+        <div class="tech-name">@techFullName</div>
+        <div class="tech-employee">
+            <i class="bi bi-person-badge me-1"></i>@techEmployeeNumber
+        </div>
+    </div>
+
+    <div class="sidebar-heading">Technician</div>
+    <nav class="nav flex-column">
+
+        @* ═════════════════════════════════════════════════════
+           1. WORKSPACE
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Workspace</div>
+
+        <a class="nav-link @active("/technician/dashboard")"
+           asp-controller="Technician" asp-action="Dashboard">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+        <a class="nav-link @active("/technician/workbench")"
+           asp-controller="Technician" asp-action="WorkBench">
+            <i class="bi bi-columns-gap me-2"></i>Work Bench
+        </a>
+        <a class="nav-link @active("/technician/states")"
+           asp-controller="Technician" asp-action="States">
+            <i class="bi bi-bar-chart-steps me-2"></i>States
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           2. SAMPLE MANAGEMENT
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Sample Management</div>
+
+        <a class="nav-link @active("/technician/receivesamples")"
+           asp-controller="Technician" asp-action="ReceiveSamples">
+            <i class="bi bi-upc-scan me-2"></i>Sample Reception
+        </a>
+        <a class="nav-link @active("/technician/cancelrequest")"
+           asp-controller="Technician" asp-action="CancelRequest">
+            <i class="bi bi-x-circle me-2"></i>Cancel Request
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           3. TESTING AND RESULTS
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Testing and Results</div>
+
+        <a class="nav-link @active("/technician/testreadytostart")"
+           asp-controller="Technician" asp-action="TestReadyToStart">
+            <i class="bi bi-play-circle me-2"></i>Ready to Start
+        </a>
+        <a class="nav-link @active("/technician/testrequests")"
+           asp-controller="Technician" asp-action="TestRequests">
+            <i class="bi bi-clipboard2-pulse me-2"></i>Test Requests
+        </a>
+        <a class="nav-link @active("/technician/testsentback")"
+           asp-controller="Technician" asp-action="TestSentBack">
+            <i class="bi bi-arrow-counterclockwise me-2"></i>Sent Back
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           4. CONSUMABLES AND STOCK
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Consumables and Stock</div>
+
+        <a class="nav-link @active("/technician/consumables")"
+           asp-controller="Technician" asp-action="Consumables">
+            <i class="bi bi-box-seam me-2"></i>Consumables
+        </a>
+        <a class="nav-link @active("/technician/requestconsumable")"
+           asp-controller="Technician" asp-action="RequestConsumable">
+            <i class="bi bi-cart-plus me-2"></i>Request Consumables
+        </a>
+        <a class="nav-link @active("/technician/mysupplyrequests")"
+           asp-controller="Technician" asp-action="MySupplyRequests">
+            <i class="bi bi-clipboard-check me-2"></i>My Supply Requests
+        </a>
+        <a class="nav-link @active("/technician/reportstockproblem")"
+           asp-controller="Technician" asp-action="ReportStockProblem">
+            <i class="bi bi-exclamation-triangle me-2"></i>Report Stock Problem
+        </a>
+        <a class="nav-link @active("/technician/usagehistory")"
+           asp-controller="Technician" asp-action="UsageHistory">
+            <i class="bi bi-clock-history me-2"></i>Usage History
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           5. REPORTS
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Reports</div>
+
+        <a class="nav-link @active("/technician/reports")"
+           asp-controller="Technician" asp-action="Reports">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>My Reports
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           6. COMMUNICATION
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Communication</div>
+
+        <a class="nav-link @active("/notifications")"
+           asp-controller="Notifications" asp-action="Index">
+            <i class="bi bi-bell me-2"></i>Notifications
+        </a>
+
+        @* ═════════════════════════════════════════════════════
+           7. ACCOUNT
+           ═════════════════════════════════════════════════════ *@
+        <div class="sidebar-heading mt-2">Account</div>
+
+        <a class="nav-link @active("/technician/profile")"
+           asp-controller="Technician" asp-action="Profile">
+            <i class="bi bi-person-lines-fill me-2"></i>My Profile
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangeEmail">
+            <i class="bi bi-envelope me-2"></i>Change Email
+        </a>
+
+    </nav>
+}
+else if (role == "Patient")
+{
+    <div class="sidebar-heading">Patient</div>
+    <nav class="nav flex-column">
+        <a class="nav-link @active("/patient/dashboard")" asp-controller="Patient" asp-action="Dashboard">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+        <a class="nav-link @active("/patient/medicalhistory")" asp-controller="Patient" asp-action="MedicalHistory">
+            <i class="bi bi-heart-pulse me-2"></i>Medical History
+        </a>
+
+        <a class="nav-link @active("/patient/consent")" asp-controller="Patient" asp-action="Consent">
+            <i class="bi bi-shield-check me-2"></i>Consent
+        </a>
+        <a class="nav-link @active("/patient/myrequests")" asp-controller="Patient" asp-action="MyRequests">
+            <i class="bi bi-heart-pulse me-2"></i>My Request
+        </a>
+
+        <a class="nav-link @active("/patient/trackresults")" asp-controller="Patient" asp-action="TrackResults">
+            <i class="bi bi-graph-up-arrow me-2"></i>Track Results
+        </a>
+        <a class="nav-link @active("/patient/reports")" asp-controller="Patient" asp-action="Reports">
+            <i class="bi bi-graph-up-arrow me-2"></i>Reports
+        </a>
+        <a class="nav-link" asp-controller="Patient" asp-action="EditProfile">
+            <i class="bi bi-person-gear me-2"></i> Edit Profile
+        </a>
+        <div class="sidebar-heading mt-2">Account</div>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangeEmail">
+            <i class="bi bi-envelope me-2"></i>Change Email
+        </a>
+    </nav>
+}
+else if (role == "Admin")
+{
+    <div class="sidebar-heading">Admin</div>
+    <nav class="nav flex-column">
+        <a class="nav-link @active("/admin/index")" asp-controller="Admin" asp-action="Index">
+            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+        </a>
+
+        <div class="sidebar-heading mt-2">Conditions</div>
+        <a class="nav-link @active("/admin/conditioncategories")" asp-controller="Admin" asp-action="ConditionCategories">
+            <i class="bi bi-folder2 me-2"></i>Categories
+        </a>
+        <a class="nav-link @active("/admin/conditions")" asp-controller="Admin" asp-action="Conditions">
+            <i class="bi bi-heart me-2"></i>Conditions
+        </a>
+
+        <div class="sidebar-heading mt-2">Allergies</div>
+        <a class="nav-link @active("/admin/allergycategories")" asp-controller="Admin" asp-action="AllergyCategories">
+            <i class="bi bi-folder2 me-2"></i>Categories
+        </a>
+        <a class="nav-link @active("/admin/allergies")" asp-controller="Admin" asp-action="Allergies">
+            <i class="bi bi-emoji-dizzy me-2"></i>Allergies
+        </a>
+
+        <div class="sidebar-heading mt-2">Medications</div>
+        <a class="nav-link @active("/admin/medicationcategories")" asp-controller="Admin" asp-action="MedicationCategories">
+            <i class="bi bi-folder2 me-2"></i>Categories
+        </a>
+        <a class="nav-link @active("/admin/medications")" asp-controller="Admin" asp-action="Medications">
+            <i class="bi bi-capsule me-2"></i>Medications
+        </a>
+
+        <div class="sidebar-heading mt-2">Other</div>
+        <a class="nav-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key me-2"></i>Change Password
+        </a>
+    </nav>
+}

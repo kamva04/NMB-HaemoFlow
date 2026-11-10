@@ -1,0 +1,323 @@
+﻿@model NMB_HLabSys.Models.ViewModels.DoctorDashboardViewModel
+@using NMB_HLabSys.Helpers
+@{
+    ViewData["Title"] = "Doctor Dashboard";
+
+    string TrendText(int delta) => delta switch
+    {
+        > 0 => $"+{delta} vs last month",
+        < 0 => $"{delta} vs last month",
+        _ => "No change vs last month"
+    };
+
+    string TrendIcon(int delta) => delta switch
+    {
+        > 0 => "bi-arrow-up-short",
+        < 0 => "bi-arrow-down-short",
+        _ => "bi-dash"
+    };
+
+    string StatusBadgeClass(string status) => status switch
+    {
+        "Submitted" => "bg-secondary",
+        "SamplesReceived" => "bg-info text-dark",
+        "InProgress" => "bg-primary",
+        "Completed" => "bg-success",
+        "ReleasedByDoctor" => "bg-success",
+        "Cancelled" => "bg-danger",
+        "Verified" => "bg-info text-dark",
+        "ToBeReviewed" => "bg-warning text-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0"><i class="bi bi-speedometer2 text-primary me-2"></i>Doctor Dashboard</h3>
+        <p class="text-muted mb-0 small">Overview of your patients, requests, and alerts</p>
+    </div>
+    <a asp-action="Profile" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-person-badge me-1"></i>@Model.DoctorDisplayName
+    </a>
+</div>
+
+<!-- Welcome banner -->
+<div class="card text-white mb-4 border-0" style="background: linear-gradient(135deg, #0d3b66 0%, #1a8fe3 100%);">
+    <div class="card-body py-4 px-4">
+        <h4 class="fw-bold mb-1">Welcome back, @Model.DoctorDisplayName 👋</h4>
+        <p class="mb-0 opacity-75">Here's what's happening with your patients and lab requests today.</p>
+    </div>
+</div>
+
+<!-- Stat cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <a asp-action="Patients" class="text-decoration-none h-100 d-block">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Patients</div>
+                        <div class="fs-2 fw-bold text-primary">@Model.PatientCount</div>
+                        <div class="small text-muted">
+                            <i class="bi @TrendIcon(Model.PatientTrend)"></i>@TrendText(Model.PatientTrend)
+                        </div>
+                    </div>
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-2">
+                        <i class="bi bi-people fs-4 text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a asp-action="TrackRequests" class="text-decoration-none h-100 d-block">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Test Requests</div>
+                        <div class="fs-2 fw-bold" style="color:#1a8fe3;">@Model.TestRequestCount</div>
+                        <div class="small text-muted">
+                            <i class="bi @TrendIcon(Model.TestRequestTrend)"></i>@TrendText(Model.TestRequestTrend)
+                        </div>
+                    </div>
+                    <div class="rounded-circle p-2" style="background:rgba(26,143,227,.12);">
+                        <i class="bi bi-clipboard2-pulse fs-4" style="color:#1a8fe3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a asp-action="TrackRequests" class="text-decoration-none h-100 d-block">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Results</div>
+                        <div class="fs-2 fw-bold text-success">@Model.ResultsCount</div>
+                        <div class="small text-muted">
+                            <i class="bi @TrendIcon(Model.ResultsTrend)"></i>@TrendText(Model.ResultsTrend)
+                        </div>
+                    </div>
+                    <div class="rounded-circle bg-success bg-opacity-10 p-2">
+                        <i class="bi bi-check2-circle fs-4 text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="col-6 col-xl-3">
+        <a asp-action="Alerts" class="text-decoration-none h-100 d-block">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Critical Alerts</div>
+                        <div class="fs-2 fw-bold text-danger">@Model.CriticalAlertsCount</div>
+                        <div class="small text-muted">
+                            <i class="bi @TrendIcon(Model.AlertsTrend)"></i>@TrendText(Model.AlertsTrend)
+                        </div>
+                    </div>
+                    <div class="rounded-circle bg-danger bg-opacity-10 p-2">
+                        <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Recent Test Requests -->
+    <div class="col-lg-7">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history text-primary me-2"></i>Recent Test Requests</span>
+                <a asp-action="TrackRequests" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Patient</th>
+                                <th>Tests</th>
+                                <th>Status</th>
+                                <th class="text-end">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.RecentRequests)
+                            {
+                                <tr style="cursor:pointer;" onclick="window.location='@Url.Action("RequestDetails", new { id = r.RequestId })'">
+                                    <td class="fw-semibold small">@r.PatientName</td>
+                                    <td class="small text-muted">@(string.IsNullOrEmpty(r.TestTypesSummary) ? "—" : r.TestTypesSummary)</td>
+                                    <td>
+                                        <span class="badge @StatusBadgeClass(r.Status)">@StatusDisplay.Format(r.Status)</span>
+                                    </td>
+                                    <td class="text-end small text-muted">@r.RequestDate.ToString("dd MMM yyyy")</td>
+                                </tr>
+                            }
+                            @if (!Model.RecentRequests.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4 small">No test requests yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Alerts -->
+    <div class="col-lg-5">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-bell-fill text-danger me-2"></i>Critical Alerts</span>
+                <a asp-action="Alerts" class="btn btn-sm btn-outline-danger">Review All</a>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.CriticalAlerts.Any())
+                {
+                    <div class="text-center text-success py-4 px-3">
+                        <i class="bi bi-check-circle fs-3 d-block mb-2"></i>
+                        <span class="small">No abnormal results in the last 5 days.</span>
+                    </div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var a in Model.CriticalAlerts)
+                        {
+                            <li class="list-group-item alert-abnormal">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <div class="fw-semibold small">@a.PatientName</div>
+                                        <div class="small text-muted">
+                                            <i class="bi bi-exclamation-circle text-danger me-1"></i>@a.TestName
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold text-danger small">
+                                            @(a.ResultValue?.ToString("F2") ?? "—")
+                                            <span class="text-muted">@a.Units</span>
+                                        </div>
+                                        <div class="text-muted" style="font-size:.75rem;">
+                                            @(a.CompletedAt?.ToString("dd MMM") ?? "—")
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a asp-action="CreatePatient" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-person-plus me-2"></i>Add New Patient
+                </a>
+                <a asp-action="SelectPatient" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-clipboard2-plus me-2"></i>Create Test Request
+                </a>
+                <a asp-action="Reports" class="btn btn-outline-primary text-start">
+                    <i class="bi bi-file-earmark-bar-graph me-2"></i>Generate Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Summary -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-activity text-success me-2"></i>System Summary
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <span class="text-muted">Active patients (90 days)</span>
+                    <span class="fs-4 fw-bold text-primary">@Model.ActivePatients</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Pending results</span>
+                    <span class="fs-4 fw-bold text-warning">@Model.PendingResults</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Trend -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">
+                <i class="bi bi-bar-chart-line text-primary me-2"></i>Activity Trend (Last 6 Months)
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" style="max-height:180px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        (async function() {
+            try {
+                const res = await fetch('@Url.Action("ActivityTrendJson", "Doctor")');
+                const data = await res.json();
+                if (!data.length) return;
+
+                new Chart(document.getElementById('activityChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.label),
+                        datasets: [{
+                            label: 'Test Requests',
+                            data: data.map(d => d.count),
+                            backgroundColor: 'rgba(26, 143, 227, 0.75)',
+                            borderColor: '#1a8fe3',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, font: { size: 10 } }
+                            },
+                            x: {
+                                ticks: { font: { size: 10 } }
+                            }
+                        }
+                    }
+                });
+            } catch (e) { /* chart optional */ }
+        })();
+    </script>
+}

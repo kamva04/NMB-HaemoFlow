@@ -1,0 +1,153 @@
+﻿@model IEnumerable<NMB_HLabSys.Models.ViewModels.TrackRequestRowViewModel>
+@{
+    var statusFilter = ViewBag.StatusFilter as string ?? string.Empty;
+    var statusOptions = new[]
+    {
+        ("", "All Statuses"),
+        ("Cancelled", "Cancelled"),
+        ("Completed", "Completed"),
+        ("InProgress", "In Progress"),
+        ("ReleasedByDoctor", "Released"),
+        ("SamplesReceived", "Samples Received"),
+        ("Submitted", "Submitted"),
+    }
+    .OrderBy(o => string.IsNullOrEmpty(o.Item1) ? 0 : 1)
+    .ThenBy(o => o.Item2)
+    .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0"><i class="bi bi-list-check text-primary me-2"></i>Track Requests</h3>
+        <p class="text-muted mb-0">Monitor each test type and its status</p>
+    </div>
+    <a asp-controller="Doctor" asp-action="SelectPatient" class="btn btn-primary">
+        <i class="bi bi-clipboard2-plus me-1"></i>New Test Request
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clipboard2-pulse me-2"></i>Test Requests</span>
+        <select id="statusFilter" class="form-select form-select-sm" style="width:200px">
+            @foreach (var opt in statusOptions)
+            {
+                if (statusFilter == opt.Item1)
+                {
+                    <option value="@opt.Item1" selected="selected">@opt.Item2</option>
+                }
+                else
+                {
+                    <option value="@opt.Item1">@opt.Item2</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Request #</th>
+                    <th>First Name</th>
+                    <th>Surname</th>
+                    <th>Date of Birth</th>
+                    <th>Test Type</th>
+                    <th>Request Date</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td class="font-monospace fw-semibold small">@r.RequestNumber</td>
+                        <td>@r.PatientName</td>
+                        <td>@r.PatientSurname</td>
+                        <td class="small">@(r.PatientDateOfBirth?.ToString("dd MMM yyyy") ?? "—")</td>
+                        <td class="small fw-semibold">@r.TestName</td>
+                        <td class="small">@r.RequestDate.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @(r.Urgency == "Stat" ? "badge-stat" : r.Urgency == "Urgent" ? "badge-urgent" : "badge-routine")">
+                                @r.Urgency
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-controller="Doctor" asp-action="TrackRequests" asp-route-status="@r.RequestStatus"
+                               class="badge text-decoration-none
+                                @(r.RequestStatus is "Completed" or "ReleasedByDoctor" ? "bg-success" :
+                                 r.RequestStatus == "Cancelled" ? "bg-danger" :
+                                 r.RequestStatus == "InProgress" ? "bg-primary" :
+                                 r.RequestStatus == "SamplesReceived" ? "bg-info text-dark" : "bg-secondary")">
+                                @NMB_HLabSys.Helpers.StatusDisplay.Format(r.RequestStatus)
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <a asp-controller="Doctor" asp-action="PatientResults" asp-route-patientId="@r.PatientId"
+                               class="btn btn-sm btn-outline-success me-1" title="View previous test results">
+                                <i class="bi bi-file-medical me-1"></i>View Results
+                            </a>
+                            <a asp-controller="Doctor" asp-action="RequestDetails" asp-route-id="@r.RequestId"
+                               class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                            @if (r.RequestStatus is "Submitted" or "SamplesReceived")
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal" data-bs-target="#cancelModal_@r.RequestId">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel
+                                </button>
+                                <div class="modal fade" id="cancelModal_@r.RequestId" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Cancel @r.RequestNumber</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form asp-action="CancelRequest" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="requestId" value="@r.RequestId" />
+                                                <div class="modal-body">
+                                                    <label class="form-label fw-semibold">Reason <span class="text-danger">*</span></label>
+                                                    <textarea name="reason" class="form-control" rows="3" required></textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-danger">Confirm cancellation</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small" title="Cannot cancel this request">🔒</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">No test requests yet. Click "New Test Request" to start.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const filter = document.getElementById('statusFilter');
+        if (!filter) return;
+        const trackRequestsUrl = '@Url.Action("TrackRequests", "Doctor")';
+        const current = '@statusFilter';
+        if (current) filter.value = current;
+        filter.addEventListener('change', function() {
+            const url = new URL(trackRequestsUrl, window.location.origin);
+            if (this.value) url.searchParams.set('status', this.value);
+            window.location.href = url.toString();
+        });
+    })();
+</script>

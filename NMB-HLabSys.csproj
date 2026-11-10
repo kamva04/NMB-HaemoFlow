@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>NMB_HLabSys</RootNamespace>
+    <AssemblyName>NMB-HLabSys</AssemblyName>
+    <UserSecretsId>e4c0d45c-8c16-4a2d-9246-2bbc17a6ef75</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- SQL Server ADO.NET driver -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+
+    <!-- Password hashing -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+
+    <!-- PDF report generation (iText 7 Community) -->
+    <PackageReference Include="itext7" Version="8.0.3" />
+    <PackageReference Include="itext7.bouncy-castle-adapter" Version="8.0.3" />
+
+    <!-- ASP.NET Core tag helpers (bundled in SDK but listed for clarity) -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NetBarcode" Version="1.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\NewFolder\" />
+  </ItemGroup>
+
+</Project>

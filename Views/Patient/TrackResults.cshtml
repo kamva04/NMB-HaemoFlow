@@ -1,0 +1,266 @@
+﻿@* ── Views/Patient/TrackResults.cshtml ── *@
+@model List<NMB_HLabSys.Models.Domain.TestType>
+@{
+    ViewData["Title"] = "Track My Results";
+}
+
+<div class="mb-4">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-graph-up-arrow text-primary me-2"></i>Track My Results
+    </h4>
+    <p class="text-muted">See how a specific test result has changed over time</p>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        You don't have any released results with numeric values to track yet. Once your doctor releases results, they'll appear here.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body" data-track-results-url="@Url.Action("TrackResultsJson", "Patient")">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-4">
+                    <label class="form-label fw-semibold" for="testTypeSelect">Test Type</label>
+                    <select id="testTypeSelect" class="form-select">
+                        <option value="">— Select a test —</option>
+                        @foreach (var t in Model)
+                        {
+                            <option value="@t.TestTypeId">@t.TestName@(string.IsNullOrEmpty(t.Units) ? "" : $" ({t.Units})")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-5 col-lg-3">
+                    <label class="form-label fw-semibold" for="fromDate">Start date</label>
+                    <input type="date" id="fromDate" class="form-control" />
+                </div>
+                <div class="col-sm-5 col-lg-3">
+                    <label class="form-label fw-semibold" for="toDate">End date</label>
+                    <input type="date" id="toDate" class="form-control" />
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" id="applyDateFilter" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </div>
+
+            <div id="chartWrap" style="display:none;">
+                <p class="text-muted small mb-2">
+                    Dashed lines show the test's normal minimum and maximum. Red points are outside that range;
+                    the lowest and highest results in the selected dates are marked with triangles.
+                </p>
+                <div id="trendChart" class="w-100" role="img" aria-label="Test result trend line graph"></div>
+            </div>
+
+            <div id="trackEmpty" class="text-muted small mt-3" style="display:none;"></div>
+            <div id="trackError" class="alert alert-danger small mt-3" style="display:none;"></div>
+            <div id="dateFilterError" class="text-danger small mt-2" style="display:none;"></div>
+
+            <div id="trackTableWrap" class="table-responsive mt-4" style="display:none;">
+                <table class="table table-sm table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-center">Result</th>
+                            <th class="text-center">Normal Range</th>
+                            <th class="text-center">Flag</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trackTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        const testTypeSelect = document.getElementById('testTypeSelect');
+        const resultsUrl = document.querySelector('[data-track-results-url]')?.dataset.trackResultsUrl;
+        const chartWrap = document.getElementById('chartWrap');
+        const emptyMsg = document.getElementById('trackEmpty');
+        const errorMsg = document.getElementById('trackError');
+        const dateFilterError = document.getElementById('dateFilterError');
+        const tableWrap = document.getElementById('trackTableWrap');
+        const tbody = document.getElementById('trackTableBody');
+
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+
+        function renderTrendChart(data, outsideNormalRange, lowestIndex, highestIndex) {
+            const host = document.getElementById('trendChart');
+            const width = 900;
+            const height = 380;
+            const margin = { top: 24, right: 28, bottom: 62, left: 76 };
+            const plotWidth = width - margin.left - margin.right;
+            const plotHeight = height - margin.top - margin.bottom;
+            const values = data.flatMap(d => [
+                Number(d.value),
+                d.normalMin == null ? null : Number(d.normalMin),
+                d.normalMax == null ? null : Number(d.normalMax)
+            ]).filter(Number.isFinite);
+            let minValue = Math.min(...values);
+            let maxValue = Math.max(...values);
+            const padding = maxValue === minValue ? Math.abs(maxValue || 1) * 0.1 : (maxValue - minValue) * 0.1;
+            minValue -= padding;
+            maxValue += padding;
+
+            const x = index => margin.left + (data.length === 1 ? plotWidth / 2 : index * plotWidth / (data.length - 1));
+            const y = value => margin.top + (maxValue - value) * plotHeight / (maxValue - minValue);
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', height);
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svg.setAttribute('aria-hidden', 'true');
+            svg.style.display = 'block';
+            svg.style.height = 'auto';
+
+            const add = (name, attrs, text) => {
+                const element = document.createElementNS(svg.namespaceURI, name);
+                Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+                if (text != null) element.textContent = text;
+                svg.appendChild(element);
+                return element;
+            };
+
+            for (let tick = 0; tick <= 4; tick++) {
+                const value = maxValue - tick * (maxValue - minValue) / 4;
+                const yPos = y(value);
+                add('line', { x1: margin.left, y1: yPos, x2: width - margin.right, y2: yPos, stroke: '#dee2e6' });
+                add('text', { x: margin.left - 10, y: yPos + 4, 'text-anchor': 'end', fill: '#6c757d', 'font-size': 12 }, value.toFixed(2));
+            }
+
+            add('line', { x1: margin.left, y1: margin.top, x2: margin.left, y2: height - margin.bottom, stroke: '#6c757d' });
+            add('line', { x1: margin.left, y1: height - margin.bottom, x2: width - margin.right, y2: height - margin.bottom, stroke: '#6c757d' });
+
+            const drawRange = (key, color, label) => {
+                const first = data.findIndex(d => d[key] != null);
+                if (first < 0) return;
+                const value = Number(data[first][key]);
+                add('line', {
+                    x1: margin.left, y1: y(value), x2: width - margin.right, y2: y(value),
+                    stroke: color, 'stroke-width': 2, 'stroke-dasharray': '7 5'
+                });
+                add('text', { x: width - margin.right - 4, y: y(value) - 6, 'text-anchor': 'end', fill: color, 'font-size': 12 }, label);
+            };
+            drawRange('normalMin', '#198754', 'Normal minimum');
+            drawRange('normalMax', '#fd7e14', 'Normal maximum');
+
+            const resultPath = data.map((d, index) =>
+                `${index === 0 ? 'M' : 'L'} ${x(index)} ${y(Number(d.value))}`).join(' ');
+            add('path', { d: resultPath, fill: 'none', stroke: '#0d6efd', 'stroke-width': 3, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
+
+            const dateLabel = date => new Date(date).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+            const labelCount = Math.min(data.length, 6);
+            const labelIndexes = new Set(Array.from({ length: labelCount }, (_, index) =>
+                labelCount === 1 ? 0 : Math.round(index * (data.length - 1) / (labelCount - 1))));
+            labelIndexes.forEach(index => {
+                const xPos = x(index);
+                add('line', { x1: xPos, y1: height - margin.bottom, x2: xPos, y2: height - margin.bottom + 5, stroke: '#6c757d' });
+                add('text', { x: xPos, y: height - margin.bottom + 22, 'text-anchor': 'middle', fill: '#6c757d', 'font-size': 12 }, dateLabel(data[index].date));
+            });
+
+            data.forEach((d, index) => {
+                const isExtreme = index === lowestIndex || index === highestIndex;
+                const fill = outsideNormalRange(d) ? '#dc3545' : '#0d6efd';
+                const point = isExtreme
+                    ? add('polygon', {
+                        points: `${x(index)},${y(Number(d.value)) - 9} ${x(index) - 8},${y(Number(d.value)) + 7} ${x(index) + 8},${y(Number(d.value)) + 7}`,
+                        fill, stroke: '#212529', 'stroke-width': 1.5
+                    })
+                    : add('circle', { cx: x(index), cy: y(Number(d.value)), r: 5, fill, stroke: '#fff', 'stroke-width': 1.5 });
+                const title = document.createElementNS(svg.namespaceURI, 'title');
+                const markers = [];
+                if (index === lowestIndex) markers.push('Lowest result');
+                if (index === highestIndex) markers.push('Highest result');
+                if (outsideNormalRange(d)) markers.push('Outside normal range');
+                title.textContent = `${dateLabel(d.date)}: ${d.value} ${d.units ?? ''}${markers.length ? ` (${markers.join(', ')})` : ''}`;
+                point.appendChild(title);
+            });
+
+            host.replaceChildren(svg);
+        }
+
+        async function loadResults() {
+            const testTypeId = testTypeSelect?.value;
+            chartWrap.style.display = 'none';
+            tableWrap.style.display = 'none';
+            emptyMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            dateFilterError.style.display = 'none';
+            document.getElementById('trendChart').replaceChildren();
+            if (!testTypeId) return;
+            if (!resultsUrl) {
+                errorMsg.textContent = 'The results endpoint is unavailable. Please reload the page.';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            if (fromDate && toDate && fromDate > toDate) {
+                dateFilterError.textContent = 'Start date must be on or before the end date.';
+                dateFilterError.style.display = 'block';
+                return;
+            }
+
+            const params = new URLSearchParams({ testTypeId });
+            if (fromDate) params.set('fromDate', fromDate);
+            if (toDate) params.set('toDate', toDate);
+
+            try {
+                const response = await fetch(`${resultsUrl}?${params}`);
+                if (!response.ok) throw new Error(`Could not load results (HTTP ${response.status}). Please try again.`);
+                const data = await response.json();
+                if (!data.length) {
+                    emptyMsg.textContent = 'No released results were found for this test and date range.';
+                    emptyMsg.style.display = 'block';
+                    return;
+                }
+
+                const outsideNormalRange = d =>
+                    d.isAbnormal ||
+                    (d.normalMin != null && d.value < d.normalMin) ||
+                    (d.normalMax != null && d.value > d.normalMax);
+                const lowestIndex = data.reduce((lowest, d, index) =>
+                    d.value < data[lowest].value ? index : lowest, 0);
+                const highestIndex = data.reduce((highest, d, index) =>
+                    d.value > data[highest].value ? index : highest, 0);
+                renderTrendChart(data, outsideNormalRange, lowestIndex, highestIndex);
+
+                tbody.innerHTML = data.map(d => {
+                    const date = new Date(d.date).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const range = (d.normalMin != null && d.normalMax != null)
+                        ? `${escapeHtml(d.normalMin)} – ${escapeHtml(d.normalMax)} ${escapeHtml(d.units)}`
+                        : '—';
+                    const isOutsideRange = outsideNormalRange(d);
+                    const flag = isOutsideRange
+                        ? '<span class="badge bg-danger">Abnormal</span>'
+                        : '<span class="badge bg-success">Normal</span>';
+                    const extremes = [
+                        data.indexOf(d) === lowestIndex ? 'Lowest' : '',
+                        data.indexOf(d) === highestIndex ? 'Highest' : ''
+                    ].filter(Boolean).join(' / ');
+                    return `<tr class="${isOutsideRange ? 'table-danger' : ''}">
+                        <td>${escapeHtml(date)}</td>
+                        <td class="text-center fw-semibold">${escapeHtml(d.value)} ${escapeHtml(d.units)}${extremes ? ` <span class="badge bg-secondary">${escapeHtml(extremes)}</span>` : ''}</td>
+                        <td class="text-center text-muted small">${range}</td>
+                        <td class="text-center">${flag}</td>
+                    </tr>`;
+                }).join('');
+                chartWrap.style.display = 'block';
+                tableWrap.style.display = 'block';
+            } catch (error) {
+                errorMsg.textContent = error.message || 'Could not load results.';
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        testTypeSelect?.addEventListener('change', loadResults);
+        document.getElementById('applyDateFilter')?.addEventListener('click', loadResults);
+    </script>
+}

@@ -1,0 +1,60 @@
+@model NMB_HLabSys.Models.ViewModels.ProposeAppointmentViewModel
+@{
+    ViewData["Title"] = "Arrange Appointment";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar2-plus me-2"></i>Propose an Appointment</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted">Propose a date and time for <strong>@Model.PatientName</strong>. The patient can confirm or decline this proposal in their portal.</p>
+                @if (!string.IsNullOrWhiteSpace(Model.RequestNumber))
+                {
+                    <p class="small"><strong>Related request:</strong> @Model.RequestNumber</p>
+                }
+
+                <form asp-action="ProposeAppointment" method="post">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="PatientId" type="hidden" />
+                    <input asp-for="RequestId" type="hidden" />
+                    <input asp-for="PatientName" type="hidden" />
+                    <input asp-for="RequestNumber" type="hidden" />
+                    <div asp-validation-summary="All" class="alert alert-danger small py-2"></div>
+                    <div class="mb-3">
+                        <label asp-for="ProposedAt" class="form-label fw-semibold"></label>
+                        <input asp-for="ProposedAt" type="datetime-local" class="form-control"
+                               min="@DateTime.Now.AddMinutes(1).ToString("yyyy-MM-ddTHH:mm")"
+                               value="@Model.ProposedAt.ToString("yyyy-MM-ddTHH:mm")" />
+                        <span asp-validation-for="ProposedAt" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="4"
+                                  placeholder="Add a reason or instructions for the patient (optional)."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-1"></i>Send Appointment Proposal
+                        </button>
+                        @if (Model.RequestId.HasValue)
+                        {
+                            <a asp-action="RequestDetails" asp-route-id="@Model.RequestId" class="btn btn-outline-secondary">Cancel</a>
+                        }
+                        else
+                        {
+                            <a asp-action="PatientDetails" asp-route-id="@Model.PatientId" class="btn btn-outline-secondary">Cancel</a>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

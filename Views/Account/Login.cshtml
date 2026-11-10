@@ -1,0 +1,105 @@
+@* ── Views/Account/Login.cshtml ── *@
+@model NMB_HLabSys.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+<div class="login-background d-flex align-items-center justify-content-center" style="background-color:#0d3b66;background-image:linear-gradient(135deg,rgba(13,59,102,0.80) 0%,rgba(26,143,227,0.72) 100%),url('@Url.Content("~/images/login-medical-team.jpg")');background-size:cover;background-position:center;background-repeat:no-repeat;">
+    <div class="card shadow-lg login-card">
+        <div class="card-body p-4 p-sm-5">
+            <div class="text-center mb-4">
+                <partial name="_AuthLogo" />
+                <h4 class="fw-bold mt-2 mb-0">NMB-HLabSys</h4>
+                <p class="text-muted small">Nelson Mandela Bay Haematology Laboratory</p>
+            </div>
+
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+                <div asp-validation-summary="All" class="alert alert-danger py-2 small"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Email" class="form-control" placeholder="you@example.com" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input asp-for="Password" class="form-control" id="passwordField" placeholder="••••••••" autocomplete="current-password" />
+                        <button type="button" class="btn btn-outline-secondary" id="togglePw" title="Show/hide password">
+                            <i class="bi bi-eye" id="pwEyeIcon"></i>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between gap-2 small">
+                    <a asp-action="ForgotPassword" class="text-decoration-none">Forgot password?</a>
+                    <a asp-controller="Patient" asp-action="Register" class="text-decoration-none">Register as patient</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        #mainContent {
+            display: flex;
+            min-width: 0;
+            padding: 0;
+        }
+
+        .login-background {
+            flex: 1;
+            min-width: 0;
+            padding: clamp(1rem, 3vw, 2.5rem);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            border-radius: 16px;
+        }
+
+        .login-card .validation-summary-valid {
+            display: none;
+        }
+
+        .login-card .validation-summary-errors ul {
+            margin-bottom: 0;
+            padding-left: 1rem;
+        }
+    </style>
+}
+
+@section Scripts {
+<script>
+    document.getElementById('togglePw').addEventListener('click', function () {
+        const f = document.getElementById('passwordField');
+        const icon = document.getElementById('pwEyeIcon');
+        if (f.type === 'password') { f.type = 'text';     icon.className = 'bi bi-eye-slash'; }
+        else                       { f.type = 'password'; icon.className = 'bi bi-eye'; }
+    });
+</script>
+<partial name="_ValidationScriptsPartial" />
+}

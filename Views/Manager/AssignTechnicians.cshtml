@@ -1,0 +1,37 @@
+@model NMB_HLabSys.Models.ViewModels.TestTypeTechniciansViewModel
+@{ ViewData["Title"] = "Assign Technicians"; }
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div><h1 class="h4 fw-bold text-primary">Technician Assignments</h1><p class="mb-0">@Model.TestName</p></div>
+    <a asp-action="TestTypes" class="btn btn-outline-secondary">Back to Test Types</a>
+</div>
+<div class="card"><div class="card-body p-4">
+    <p>Select the technicians who can perform this test type. You can assign more than one technician. Archived technicians cannot be selected; their existing assignments are preserved.</p>
+    @if (!Model.IsActive) { <div class="alert alert-info">This test type is inactive. Restore it to change assignments.</div> }
+    <form asp-action="AssignTechnicians" method="post">
+        @Html.AntiForgeryToken()
+        <input asp-for="TestTypeId" type="hidden" />
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Assign</th><th>Technician</th><th>Employee number</th></tr></thead>
+                <tbody>
+                    @foreach (var technician in Model.Technicians)
+                    {
+                        <tr>
+                            <td><input type="checkbox" class="form-check-input" name="SelectedTechnicianIds" value="@technician.TechnicianId" id="technician-@technician.TechnicianId" checked="@Model.SelectedTechnicianIds.Contains(technician.TechnicianId)" disabled="@(!Model.IsActive || technician.IsDeleted)" /></td>
+                            <td><label for="technician-@technician.TechnicianId">@technician.Name @technician.Surname</label> @if (technician.IsDeleted) { <span class="badge bg-secondary">Archived</span> }</td>
+                            <td>@technician.EmployeeNumber</td>
+                        </tr>
+                    }
+                    @if (!Model.Technicians.Any()) { <tr><td colspan="3" class="text-muted">No technicians registered. <a asp-action="CreateTechnician">Add a technician</a> first.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+        @if (Model.IsActive && Model.Technicians.Any())
+        {
+            <p class="small text-muted">Unchecking a technician removes their assignment to this test type. Saving with none selected leaves it unassigned.</p>
+            <button type="submit" class="btn btn-primary">Save Assignments</button>
+        }
+        <a asp-action="TestTypes" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div></div>

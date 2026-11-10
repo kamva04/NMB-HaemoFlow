@@ -1,0 +1,248 @@
+﻿@model NMB_HLabSys.Models.ViewModels.PatientEditProfileViewModel
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-gear me-2"></i>
+                        Edit Profile
+                    </h4>
+                </div>
+
+                <div class="card-body p-4">
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            <i class="bi bi-check-circle me-2"></i>
+                            @TempData["Success"]
+
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert">
+                            </button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger">
+                    </div>
+
+                    <form asp-action="EditProfile"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               asp-for="PatientId" />
+
+                        <div class="row">
+
+                            <!-- Name -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Name"
+                                       class="form-label fw-semibold">
+                                </label>
+
+                                <input asp-for="Name"
+                                       class="form-control"
+                                       placeholder="Enter your first name" />
+
+                                <span asp-validation-for="Name"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Gender" class="form-label fw-semibold"></label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">Select gender</option>
+                                    <option>Female</option>
+                                    <option>Male</option>
+                                    <option>Other</option>
+                                    <option>Prefer not to say</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
+                            </div>
+
+                            <!-- Surname -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="Surname"
+                                       class="form-label fw-semibold">
+                                </label>
+
+                                <input asp-for="Surname"
+                                       class="form-control"
+                                       placeholder="Enter your surname" />
+
+                                <span asp-validation-for="Surname"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- SA ID -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="SAIDNumber"
+                                       class="form-label fw-semibold">
+                                </label>
+
+                                <input asp-for="SAIDNumber"
+                                       class="form-control"
+                                       maxlength="13"
+                                       inputmode="numeric"
+                                       placeholder="13-digit ID number" />
+
+                                <span asp-validation-for="SAIDNumber"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="DateOfBirth"
+                                       class="form-label fw-semibold">
+                                </label>
+
+                                <input asp-for="DateOfBirth"
+                                       type="date"
+                                       class="form-control"
+                                       readonly />
+
+                                <span asp-validation-for="DateOfBirth"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- Cell Number -->
+                            <div class="col-md-6 mb-3">
+
+                                <label asp-for="CellNumber"
+                                       class="form-label fw-semibold">
+                                </label>
+
+                                <input asp-for="CellNumber"
+                                       class="form-control"
+                                       type="tel"
+                                       inputmode="numeric"
+                                       maxlength="10"
+                                       pattern="[0-9]{10}"
+                                       placeholder="e.g. 0821234567" />
+
+                                <span asp-validation-for="CellNumber"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <!-- Structured Home Address -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Street" class="form-label fw-semibold"></label>
+                                <input asp-for="Street" class="form-control" placeholder="Street address" />
+                                <span asp-validation-for="Street" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Street2" class="form-label fw-semibold"></label>
+                                <input asp-for="Street2" class="form-control" placeholder="Apartment, building, or second street line (optional)" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Province" class="form-label fw-semibold"></label>
+                                <select asp-for="Province" class="form-select" id="Province">
+                                    <option value="">Select province first</option>
+                                    <option>Eastern Cape</option>
+                                    <option>Free State</option>
+                                    <option>Gauteng</option>
+                                    <option>KwaZulu-Natal</option>
+                                    <option>Limpopo</option>
+                                    <option>Mpumalanga</option>
+                                    <option>North West</option>
+                                    <option>Northern Cape</option>
+                                    <option>Western Cape</option>
+                                </select>
+                                <span asp-validation-for="Province" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Town" class="form-label fw-semibold"></label>
+                                <select asp-for="Town" class="form-select" id="Town" data-selected-town="@Model.Town" disabled>
+                                    <option value="">Select a province first</option>
+                                </select>
+                                <span asp-validation-for="Town" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="Suburb" class="form-label fw-semibold"></label>
+                                <input asp-for="Suburb" class="form-control" placeholder="Enter suburb" />
+                                <span asp-validation-for="Suburb" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label asp-for="PostalCode" class="form-label fw-semibold"></label>
+                                <input asp-for="PostalCode" class="form-control" maxlength="4" inputmode="numeric" />
+                                <span asp-validation-for="PostalCode" class="text-danger"></span>
+                            </div>
+
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex justify-content-between">
+
+                            <a asp-action="Dashboard"
+                               class="btn btn-outline-secondary">
+
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Back
+
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-save me-1"></i>
+                                Save Changes
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script src="~/js/patient-address.js"></script>
+    <script src="~/js/patient-id.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

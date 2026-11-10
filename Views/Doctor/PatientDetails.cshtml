@@ -1,0 +1,228 @@
+﻿@model NMB_HLabSys.Models.Domain.Patient
+@{
+    ViewData["Title"] = "Patient Details";
+    var age = DateTime.Today.Year - Model.DateOfBirth.Year;
+    if (Model.DateOfBirth.Date > DateTime.Today.AddYears(-age))
+    {
+        age--;
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0">
+            <i class="bi bi-person-lines-fill text-primary me-2"></i>
+            @Model.Name @Model.Surname
+        </h4>
+        <p class="text-muted mb-0 small">
+            ID: <span class="font-monospace">@Model.SAIDNumber</span> &nbsp;|&nbsp;
+            DOB: @Model.DateOfBirth.ToString("dd MMM yyyy") &nbsp;|&nbsp;
+            Age: @(age >= 0 ? $"{age} years" : "—") &nbsp;|&nbsp;
+            Gender: @(string.IsNullOrWhiteSpace(Model.Gender) ? "Not recorded" : Model.Gender) &nbsp;|&nbsp;
+            Cell: @(Model.CellNumber ?? "—") &nbsp;|&nbsp;
+            Email: @Model.User?.Email
+        </p>
+        @if (!string.IsNullOrWhiteSpace(Model.Street))
+        {
+            <p class="text-muted small mb-0">
+                Address: @Model.Street
+                @if (!string.IsNullOrWhiteSpace(Model.Street2))
+                {
+                    @($" , {Model.Street2}")
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.Suburb))
+                {
+                    @($" , {Model.Suburb}")
+                }
+                , @Model.Town, @Model.Province, @Model.PostalCode
+            </p>
+        }
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="PatientResults" asp-route-patientId="@Model.PatientId"
+           class="btn btn-success">
+            <i class="bi bi-file-medical me-1"></i>View Results
+        </a>
+        <a asp-action="ProposeAppointment" asp-route-patientId="@Model.PatientId"
+           class="btn btn-outline-primary">
+            <i class="bi bi-calendar2-plus me-1"></i>Arrange Appointment
+        </a>
+        <a asp-action="CreateRequest" asp-route-patientId="@Model.PatientId"
+           class="btn btn-primary">
+            <i class="bi bi-clipboard2-plus me-1"></i>New Request
+        </a>
+        <a asp-action="Patients" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Conditions -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold text-danger">
+                <i class="bi bi-heart me-2"></i>Chronic Conditions
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var c in Model.Conditions)
+                {
+                    <li class="list-group-item small"><i class="bi bi-dot me-1 text-danger"></i>@c.ConditionName</li>
+                }
+                @if (!Model.Conditions.Any())
+                {
+                    <li class="list-group-item text-muted small">None recorded</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <!-- Allergies -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold text-warning">
+                <i class="bi bi-emoji-dizzy me-2"></i>Allergies
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var a in Model.Allergies)
+                {
+                    <li class="list-group-item small"><i class="bi bi-dot me-1 text-warning"></i>@a.AllergyName</li>
+                }
+                @if (!Model.Allergies.Any())
+                {
+                    <li class="list-group-item text-muted small">None recorded</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <!-- Medication -->
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header fw-semibold text-info">
+                <i class="bi bi-capsule me-2"></i>Current Medication
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach (var m in Model.Medications)
+                {
+                    <li class="list-group-item small"><i class="bi bi-dot me-1 text-info"></i>@m.MedicationName</li>
+                }
+                @if (!Model.Medications.Any())
+                {
+                    <li class="list-group-item text-muted small">None recorded</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header fw-semibold"><i class="bi bi-clock-history me-2"></i>Previous Patient Results</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm mb-0 align-middle" id="patientHistoryTable">
+                <thead class="table-light">
+                    <tr><th>Date</th><th>Category</th><th>Test</th><th>Result</th><th>Normal range</th><th>Doctor</th><th>Request</th></tr>
+                </thead>
+                <tbody><tr><td colspan="7" class="text-center text-muted py-3 small">Loading history…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent test requests for this patient -->
+<div class="card mt-4">
+    <div class="card-header fw-semibold">
+        <i class="bi bi-clipboard2-pulse me-2"></i>Patient Test History
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover table-sm mb-0 align-middle" id="patReqTable">
+            <thead class="table-light">
+                <tr><th>Request #</th><th>Date</th><th>Doctor</th><th>Urgency</th><th>Status</th><th class="text-end">Action</th></tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="6" class="text-center text-muted py-3 small">Loading…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const patientId = @Model.PatientId;
+        const patientHistoryUrl = '@Url.Action("PatientHistoryJson", "Doctor")';
+        const patientRequestsUrl = '@Url.Action("PatientRequestsJson", "Doctor")';
+        const requestDetailsUrl = '@Url.Action("RequestDetails", "Doctor")';
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        const withPatientId = url => `${url}?${new URLSearchParams({ patientId })}`;
+        fetch(withPatientId(patientHistoryUrl))
+            .then(response => {
+                if (!response.ok) throw new Error('History is unavailable.');
+                return response.json();
+            })
+            .then(rows => {
+                const body = document.querySelector('#patientHistoryTable tbody');
+                if (!rows.length) {
+                    body.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3 small">No prior results are available for this patient.</td></tr>';
+                    return;
+                }
+                body.innerHTML = rows.map(row => {
+                    const result = row.result == null ? '—' : `${row.result} ${row.units ?? ''}`;
+                    const range = row.minimum == null || row.maximum == null ? '—' : `${row.minimum}–${row.maximum} ${row.units ?? ''}`;
+                    const dateValue = row.completedAt || row.requestDate;
+                    const date = new Date(dateValue).toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+                    return `<tr class="${row.abnormal ? 'table-danger' : ''}">
+                        <td class="text-nowrap">${escapeHtml(date)}</td>
+                        <td>${escapeHtml(row.category)}</td>
+                        <td>${escapeHtml(row.testName)}</td>
+                        <td class="fw-semibold">${escapeHtml(result)}${row.abnormal ? ' <span class="badge bg-danger">Abnormal</span>' : ''}</td>
+                        <td>${escapeHtml(range)}</td>
+                        <td>${escapeHtml(row.doctor)}</td>
+                        <td class="font-monospace">${escapeHtml(row.requestNumber)}</td>
+                    </tr>`;
+                }).join('');
+            })
+            .catch(() => {
+                document.querySelector('#patientHistoryTable tbody').innerHTML =
+                    '<tr><td colspan="7" class="text-center text-danger py-3 small">Could not load patient history.</td></tr>';
+            });
+        fetch(withPatientId(patientRequestsUrl))
+            .then(r => {
+                if (!r.ok) throw new Error(`Could not load patient requests (HTTP ${r.status}).`);
+                return r.json();
+            })
+            .then(data => {
+                const tbody = document.querySelector('#patReqTable tbody');
+                if (!data.length) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3 small">No requests yet.</td></tr>';
+                    return;
+                }
+                const statusClass = s => ({
+                    'Completed':'bg-success','ReleasedByDoctor':'bg-success',
+                    'Cancelled':'bg-danger','InProgress':'bg-primary',
+                    'SamplesReceived':'bg-info text-dark'
+                }[s] ?? 'bg-secondary');
+                const urgencyClass = u => u === 'Stat' ? 'badge-stat' : u === 'Urgent' ? 'badge-urgent' : 'badge-routine';
+                tbody.innerHTML = data.map(r =>
+                    `<tr>
+                        <td class="font-monospace small fw-semibold">${escapeHtml(r.requestNumber)}</td>
+                        <td class="small">${new Date(r.requestDate).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}</td>
+                        <td class="small">${escapeHtml(r.doctorName)}</td>
+                        <td><span class="badge ${urgencyClass(r.urgency)}">${escapeHtml(r.urgency)}</span></td>
+                        <td><span class="badge ${statusClass(r.status)}">${escapeHtml(r.status)}</span></td>
+                        <td class="text-end">
+                            <a href="${requestDetailsUrl}?id=${encodeURIComponent(r.requestId)}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>View
+                            </a>
+                        </td>
+                    </tr>`
+                ).join('');
+            })
+            .catch(() => {
+                document.querySelector('#patReqTable tbody').innerHTML =
+                    '<tr><td colspan="6" class="text-center text-danger py-3 small">Could not load patient test history.</td></tr>';
+            });
+    </script>
+}

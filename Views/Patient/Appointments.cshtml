@@ -1,0 +1,70 @@
+@model IEnumerable<NMB_HLabSys.Models.Domain.PatientAppointment>
+@{
+    ViewData["Title"] = "My Appointments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="fw-bold mb-0"><i class="bi bi-calendar2-check text-primary me-2"></i>My Appointments</h4>
+        <p class="text-muted mb-0">Review and respond to appointment proposals from your doctors.</p>
+    </div>
+    <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Warning"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warning"]</div>
+}
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr><th>Proposed date</th><th>Doctor</th><th>Related request</th><th>Message</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var appointment in Model)
+                {
+                    <tr>
+                        <td class="text-nowrap">@appointment.ProposedAt.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>Dr @appointment.Doctor?.Name @appointment.Doctor?.Surname</td>
+                        <td>@(appointment.Request?.RequestNumber ?? "—")</td>
+                        <td class="small">@(appointment.Notes ?? "—")</td>
+                        <td><span class="badge @(appointment.Status == "Confirmed" ? "bg-success" : appointment.Status == "Declined" ? "bg-secondary" : "bg-warning text-dark")">@appointment.Status</span></td>
+                        <td>
+                            @if (appointment.Status == "Pending")
+                            {
+                                <div class="d-flex gap-1">
+                                    <form asp-action="AppointmentResponse" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                        <input type="hidden" name="accept" value="true" />
+                                        <button type="submit" class="btn btn-sm btn-success">Confirm</button>
+                                    </form>
+                                    <form asp-action="AppointmentResponse" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="appointmentId" value="@appointment.AppointmentId" />
+                                        <input type="hidden" name="accept" value="false" />
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Decline</button>
+                                    </form>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">No appointment proposals yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
