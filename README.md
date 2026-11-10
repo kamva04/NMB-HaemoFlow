@@ -36,7 +36,7 @@ The system follows a laboratory testing workflow:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/NMB-HLabSys.git
+   git clone https://github.com/kamva04/NMB-HLabSys.git
    ```
 
 2. Open `NMB-HLabSys.sln` in Visual Studio.
